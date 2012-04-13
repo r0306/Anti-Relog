@@ -1,0 +1,11 @@
+name: AntiRelog
+main: com.github.r0306.antirelog.antirelog
+version: 1.0.0
+permissions:
+    antirelog.*:
+        description: Gives access to all PVP bypasses and AntiRelog commands.
+        children:
+            antirelog.pvpbypass: true
+    antirelog.pvpbypass:
+        description: Players who have this node can bypass all PVP battles and penalties.
+        default: op
