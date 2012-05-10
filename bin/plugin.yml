@@ -1,6 +1,26 @@
 name: AntiRelog
 main: com.github.r0306.antirelog.antirelog
-version: 1.0.0
+version: 1.3.0
+commands:
+  ar:
+    description: Shows plugin information.
+    usage: /<command>
+    aliases: [a, arl]
+  antirelog:
+    description: Shows plugin information.
+    usage: /<command>
+  ar t:
+    description: Shows plugin information.
+    usage: /<command>
+  antirelog t:
+    description: Displays combat time left.
+    usage: /<command>
+  ar time:
+    description: Displays combat time left.
+    usage: /<command>
+  antirelog time:
+    description: Displays combat time left.
+    usage: /<command>
 permissions:
     antirelog.*:
         description: Gives access to all PVP bypasses and AntiRelog commands.

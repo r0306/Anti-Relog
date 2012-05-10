@@ -10,7 +10,7 @@ public class DeathListener implements Listener{
 	@EventHandler
 	public void PlayerDeath (PlayerDeathEvent event) {
 		Player playerdeath = event.getEntity();
-		if (DamageListener.Damagelist.contains(playerdeath)) {
+		if (DamageListener.Damagelist.containsKey(playerdeath)) {
 			DamageListener.Damagelist.remove(playerdeath);
 		}
 	}
