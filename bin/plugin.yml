@@ -1,6 +1,6 @@
 name: AntiRelog
 main: com.github.r0306.antirelog.antirelog
-version: 1.3.0
+version: 1.5.0
 commands:
   ar:
     description: Shows plugin information.
@@ -21,6 +21,12 @@ commands:
   antirelog time:
     description: Displays combat time left.
     usage: /<command>
+  ar unban:
+    description: Unbans the selected player when they combat log.
+    usage: /<command>
+  antirelog unban:
+    description: Unbans the selected player when they combat log.
+    usage: /<command>
 permissions:
     antirelog.*:
         description: Gives access to all PVP bypasses and AntiRelog commands.
@@ -28,4 +34,7 @@ permissions:
             antirelog.pvpbypass: true
     antirelog.pvpbypass:
         description: Players who have this node can bypass all PVP battles and penalties.
+        default: op
+    antirelog.unban:
+        description: Grants the ability to unban players who were originally banned through pvp logging.
         default: op

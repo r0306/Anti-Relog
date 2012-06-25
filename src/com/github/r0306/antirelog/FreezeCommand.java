@@ -1,14 +1,11 @@
 package com.github.r0306.antirelog;
 
 import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
@@ -20,9 +17,8 @@ public class FreezeCommand implements Listener {
 	}
 
 
-	@EventHandler
+	@EventHandler (priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void freeze (PlayerCommandPreprocessEvent event) {
-		
 			Player player = event.getPlayer();
 		    Calendar c = Calendar.getInstance();
 	    if (player.hasPermission("antirelog.pvpbypass") || player.isOp()) {
@@ -37,7 +33,7 @@ public class FreezeCommand implements Listener {
 						 for (int i = 0; i < plugin.cmdd.length; i++) {
 						 if (message.startsWith("/ar") || message.startsWith("/antirelog") || plugin.getConfig().getString("CMDToggle").equalsIgnoreCase("off") || plugin.getConfig().getString("CMDToggle").equalsIgnoreCase("false")) {
 							 break;
-						 } else if (plugin.getConfig().getStringList("DisallowedCMDs").contains("*") || message.contains("/" + plugin.cmdd[i])) {
+						 } else if (plugin.getConfig().getString("DisallowAll").equalsIgnoreCase("true") || plugin.getConfig().getString("DisallowAll").equalsIgnoreCase("on") || message.contains("/" + plugin.cmdd[i])) {
 				                event.getPlayer().sendMessage(ChatColor.RED + plugin.getConfig().getString("StunMSG"));	   
 				                event.setCancelled(true);
 				                break;

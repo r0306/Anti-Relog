@@ -1,27 +1,18 @@
 package com.github.r0306.antirelog;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 public class LogPrevention implements Listener {
@@ -29,8 +20,8 @@ public class LogPrevention implements Listener {
 	public LogPrevention (antirelog plugin) {
 		this.plugin = plugin;
 	}
-	private MyTask task;
 	static Set<Player> TempBan = Collections.newSetFromMap(new WeakHashMap<Player,Boolean>());
+	public static ArrayList<String> TempBanNames = new ArrayList<String>();
 	static Set<String> TempBanList = Collections.newSetFromMap(new WeakHashMap<String,Boolean>());
 	static Set<Player> OnJoinMessage = Collections.newSetFromMap(new WeakHashMap<Player, Boolean>());
 	public static long hi;
@@ -41,26 +32,35 @@ public class LogPrevention implements Listener {
 	    Calendar c = Calendar.getInstance();
 		int stunTime = plugin.getConfig().getInt("StunDuration");
 		final Player playerquit = event.getPlayer();
-		if (playerquit.hasPermission("antirelog.pvpbypass") || playerquit.isOp() || DisconnectMsg == null || DisconnectMsg.equalsIgnoreCase("disconnect.endofstream") || DisconnectMsg.equalsIgnoreCase("disconnect.timeout") || DisconnectMsg.equalsIgnoreCase("disconnect.overflow")) {
+		if (playerquit.hasPermission("antirelog.pvpbypass") || playerquit.isOp() || DisconnectMsg == null || DisconnectMsg.equalsIgnoreCase("disconnect.timeout") || DisconnectMsg.equalsIgnoreCase("disconnect.overflow")) {
 			DamageListener.Damagelist.remove(playerquit);
 			DisconnectMsg = null;
 		} else {
 			if (DamageListener.Damagelist.containsKey(playerquit) && stunTime > 0) {
 				final long endTime = DamageListener.Damagelist.get(playerquit);
+				if (playerquit.isDead()) {
+					return;
+				}
 				if (endTime > (c.getTimeInMillis() / 1000)) {
 				DisconnectMsg = null;
 				String playerquitname = playerquit.getName();
 				playernamelog = playerquitname;
 				if (plugin.getConfig().getString("TempBanMsgToggle").equalsIgnoreCase("true") || plugin.getConfig().getString("TempBanMsgToggle").equalsIgnoreCase("on")) {
 				Bukkit.broadcastMessage(ChatColor.GREEN + "[AntiRelog] " + playerquitname + " has logged off during combat.");
-				Bukkit.broadcastMessage(ChatColor.GREEN + plugin.getConfig().getString("TempBanMsg"));
+				Bukkit.broadcastMessage(ChatColor.GREEN + plugin.getConfig().getString("TempBanMsg").replaceAll("<player>", playerquitname));
 				}
 				DamageListener.Damagelist.remove(playerquit);
 				final String quitname = playerquit.getName();
-				TempBan.add(playerquit);
+				if (Bukkit.getServer().getOnlineMode() == true) {
 				TempBanList.add(quitname);
-	        	PVPLogger log = new PVPLogger();
+				} else {
+					playerquit.setBanned(true);
+					TempBanNames.add(quitname);
+				}
+				TempBan.add(playerquit);
+	        	PVPLogger log = new PVPLogger(plugin);
 	       		log.Write();
+	       		if (plugin.getConfig().getString("DropItems").equalsIgnoreCase("true") || plugin.getConfig().getString("DropItems").equalsIgnoreCase("on")) {
 		        for (ItemStack i : playerquit.getInventory().getContents())
 		        {
 		            if (i != null) {
@@ -86,14 +86,22 @@ public class LogPrevention implements Listener {
 				}
 			    playerquit.setLevel( 0 );
 	       	    playerquit.setExp( 0 );
+	       		}
 				int banduration = plugin.getConfig().getInt("BanDuration") * 1200;
 				OnJoinMessage.add(playerquit);
         		plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 					public void run() {
-							TempBan.remove(playerquit);
-							TempBanList.remove(quitname);
-		    	        	PVPLogger log = new PVPLogger();
-		        			log.WriteUnbanned();
+						if (TempBan.contains(playerquit)) {
+							if (Bukkit.getServer().getOnlineMode() == true) {
+								TempBanList.remove(quitname);
+							} else {
+								playerquit.setBanned(false);
+								TempBanNames.remove(quitname);
+							}
+								TempBan.remove(playerquit);
+								PVPLogger log = new PVPLogger(plugin);
+		    	        		log.WriteUnbanned();
+							}
 						}
 					}
         		 , banduration);
