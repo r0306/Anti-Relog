@@ -76,14 +76,16 @@ public class LogPrevention implements Listener {
 		        	}
 		        }
 		        playerquit.getInventory().setArmorContents(new ItemStack[4]);
-	       		float Exp = playerquit.getExp();
-	       		int ExpOrbs = (int)Exp;
-	       		int Level = playerquit.getLevel();
-	       		int ExpTotal = ((2 * Level * Level) + (5 * ExpOrbs)) / 5;
-	       		World world = playerquit.getWorld();
-	       		for (int i = 0; i < 6; i ++) {
-	       	    ((ExperienceOrb)world.spawn(playerquit.getLocation(), ExperienceOrb.class)).setExperience( ExpTotal );
+		        if (plugin.getConfig().getString("DropExp").equalsIgnoreCase("true") || plugin.getConfig().getString("DropExp").equalsIgnoreCase("on")) {
+		       		float Exp = playerquit.getExp();
+		       		int ExpOrbs = (int)Exp;
+		       		int Level = playerquit.getLevel();
+		       		int ExpTotal = ((2 * Level * Level) + (5 * ExpOrbs)) / 5;
+		       		World world = playerquit.getWorld();
+		       		for (int i = 0; i < 6; i ++) {
+		       	    		((ExperienceOrb)world.spawn(playerquit.getLocation(), ExperienceOrb.class)).setExperience( ExpTotal );
 				}
+		        }
 			    playerquit.setLevel( 0 );
 	       	    playerquit.setExp( 0 );
 	       		}
