@@ -121,6 +121,7 @@ public class antirelog extends JavaPlugin{
 		cfg.addDefault("MobLogger", "off");
 		cfg.addDefault("PassiveMobLogger", "off");
 		cfg.addDefault("DropItems", "on");
+		cfg.addDefault("DropExp", "on");
 		cfg.addDefault("PlayerBanMsg", "You have been banned for 5 minutes due to PVP logging.");
 		cfg.addDefault("TempBanMsgToggle", "on");
 		cfg.addDefault("TempBanMsg", "Cowards will not be tolerated on this server.");
