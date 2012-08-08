@@ -1,169 +1,213 @@
-package com.github.r0306.antirelog;
+package com.github.r0306.AntiRelog;
 
-import java.util.Calendar;
+import java.io.IOException;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class Executor implements CommandExecutor {
-	
-	private antirelog plugin;
-	 
-	public Executor(antirelog plugin) {
-		this.plugin = plugin;
-	}
-	public static String unban = null;
-	public static String unbanBy = null;
-	
+import com.github.r0306.AntiRelog.NPC.AntiRelogNPC;
+import com.github.r0306.AntiRelog.Storage.DataBase;
+import com.github.r0306.AntiRelog.Util.Clock;
+import com.github.r0306.AntiRelog.Util.Colors;
+import com.github.r0306.AntiRelog.Util.Util;
+
+public class Executor implements CommandExecutor, Colors
+{
+
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
+	{
+	
 		Player player = null;
-		if (sender instanceof Player) {
-			player = (Player) sender;
-		} else {
-			System.out.println("You can only use this command in-game!");
-			return true;
-		}
 		
-		if (cmd.getName().equalsIgnoreCase("ar")) {
-			if (args.length == 0) {
-			player.sendMessage(ChatColor.GRAY + "[AntiRelog] This is version 1.5.");
-			return true;
+		if (sender instanceof Player)
+		{
+			
+			player = (Player) sender;
+			
+		}
+	
+		if (cmd.getName().equalsIgnoreCase("ar") || cmd.getName().equalsIgnoreCase("antirelog") || cmd.getName().equalsIgnoreCase("arl"))
+		{
+			
+			if (args.length == 0)
+			{
+				AntiRelogNPC.spawnNPC(player);
+				displayIntro(sender);
+				
 			}
 			
-			if (((args.length == 1) && args[0].equalsIgnoreCase("t")) || ((args.length == 1) && (args[0].equalsIgnoreCase("time")))) {
-				if (DamageListener.Damagelist.containsKey(player)) {
-				    Calendar c = Calendar.getInstance();
-					long endTime = DamageListener.Damagelist.get(player);
-					if (endTime > (c.getTimeInMillis() / 1000)){
-					long timeLeft = DamageListener.Damagelist.get(player) - (c.getTimeInMillis() / 1000);
-					player.sendMessage(ChatColor.DARK_AQUA + "You have " + timeLeft + " seconds before combat ends.");
-					return true;
-					} else { 
-					player.sendMessage(ChatColor.GREEN + "You are not currently in combat.");
-					return true;
-					} 
-				} else {
-					player.sendMessage(ChatColor.GREEN + "You are not currently in combat.");
-					return true;
+			else if (args.length == 1)
+			{
+				
+				if (args[0].equalsIgnoreCase("t") || args[0].equalsIgnoreCase("time"))
+				{
+					
+					if (playerCheck(sender))
+					{
+						
+						getRemainingTime(player);
+						
+					}
+					
 				}
+				
+				else
+				{
+					
+					unknownCommand(sender);
+					
+				}
+				
 			}
-			else if (args.length == 2 && args[0].equalsIgnoreCase("unban")) {
-				if (player.hasPermission("antirelog.unban") || player.isOp()) {
-					OfflinePlayer p = Bukkit.getServer().getOfflinePlayer(args[1]);
-					if (p == null) {
-						player.sendMessage(ChatColor.RED + "[AntiRelog] Player is not found. Please check the spelling and try again.");
-					} else {
-						if (Bukkit.getServer().getOnlineMode() == true) {
-							if (LogPrevention.TempBan.contains(p)) {
-								LogPrevention.TempBan.remove(p);
-								LogPrevention.TempBanList.remove(p.getName());
-								player.sendMessage(ChatColor.GOLD + "[AntiRelog] " + args[1] + " was unbanned.");
-								unban = args[1];
-								unbanBy = player.getName();
-					        	PVPLogger log = new PVPLogger(plugin);
-								log.WriteUnbannedByPlayer();
-								return true;
-							} else {
-								player.sendMessage(ChatColor.RED + "[AntiRelog] " + args[1] + " was not banned.");
-								return true;
-							}
-						} else {
-							if (LogPrevention.TempBanNames.contains(args[1])) {
-								p.setBanned(false);
-								LogPrevention.TempBan.remove(p);
-								LogPrevention.TempBanNames.remove(args[1]);
-								player.sendMessage(ChatColor.GOLD + "[AntiRelog] " + args[1] + " was unbanned.");
-								unban = args[1];
-								unbanBy = player.getName();
-					        	PVPLogger log = new PVPLogger(plugin);
-								log.WriteUnbannedByPlayer();
-								return true;
-							} else {
-								player.sendMessage(ChatColor.RED + "[AntiRelog] " + args[1] + " was not banned.");
-								return true;
-							}
+			
+			else if (args.length == 2)
+			{
+				
+				if (args[0].equalsIgnoreCase("unban"))
+				{
+					
+					if (Util.canUnban(sender))
+					{
+
+						try
+						{
+						
+							unbanPlayer(sender, args[1]);
+						
+						} catch (IOException e) {
+
+							e.printStackTrace();
+						
 						}
+						
 					}
-				}
-			} else {
-			player.sendMessage(ChatColor.RED + "[AntiRelog] Unknown command.");
-			return true;
-			} 
-		}	
-		else if (args.length < 0 || args.length > 2) {
-			player.sendMessage(ChatColor.RED + "[AntiRelog] Unknown command.");
-		}	
-		else if (cmd.getName().equalsIgnoreCase("antirelog")) {
-				if (args.length == 0) {
-				player.sendMessage(ChatColor.GRAY + "[AntiRelog] This is Version 1.5.");
-				return true;
-				}
-				else if (((args.length == 1) && args[0].equalsIgnoreCase("t")) || ((args.length == 1) && (args[0].equalsIgnoreCase("time")))) {
-					if (DamageListener.Damagelist.containsKey(player)) {
-					    Calendar c = Calendar.getInstance();
-						long endTime = DamageListener.Damagelist.get(player);
-						if (endTime > (c.getTimeInMillis() / 1000)){
-						long timeLeft = DamageListener.Damagelist.get(player) - (c.getTimeInMillis() / 1000);
-						player.sendMessage(ChatColor.DARK_AQUA + "You have  " + timeLeft + " seconds before combat ends.");
-						return true;
-						} else {
-						player.sendMessage(ChatColor.GREEN + "You are not currently in combat.");
-						return true;
-						}
-					} else {
-						player.sendMessage(ChatColor.GREEN + "You are not currently in combat.");
-						return true;
+					
+					else
+					{
+						
+						noPermissions(sender);
+						
 					}
+					
 				}
-				if (player.hasPermission("antirelog.unban") || player.isOp()) {
-					OfflinePlayer p = Bukkit.getServer().getOfflinePlayer(args[1]);
-					if (p == null) {
-						player.sendMessage(ChatColor.RED + "[AntiRelog] Player is not found. Please check the spelling and try again.");
-					} else {
-						if (Bukkit.getServer().getOnlineMode() == true) {
-							if (LogPrevention.TempBan.contains(p)) {
-								LogPrevention.TempBan.remove(p);
-								LogPrevention.TempBanList.remove(p.getName());
-								player.sendMessage(ChatColor.GOLD + "[AntiRelog] " + args[1] + " was unbanned.");
-					        	PVPLogger log = new PVPLogger(plugin);
-								log.WriteUnbannedByPlayer();
-								return true;
-							} else {
-								player.sendMessage(ChatColor.RED + "[AntiRelog] " + args[1] + " was not banned.");
-								return true;
-							}
-						} else {
-							if (LogPrevention.TempBan.contains(p)) {
-								p.setBanned(false);
-								LogPrevention.TempBan.remove(p);
-								player.sendMessage(ChatColor.GOLD + "[AntiRelog] " + args[1] + " was unbanned.");
-					        	PVPLogger log = new PVPLogger(plugin);
-								log.WriteUnbannedByPlayer();
-								return true;
-							} else {
-								player.sendMessage(ChatColor.RED + "[AntiRelog] " + args[1] + " was not banned.");
-								return true;
-							}
-						}
-					}
-				} else {
-				player.sendMessage(ChatColor.RED + "[AntiRelog] Unknown command.");
-				return false;
-				} 
+				
+				else
+				{
+					
+					unknownCommand(sender);
+					
+				}
+				
+			}
+			
+			else
+			{
+				
+				unknownCommand(sender);
+				
+			}
+			
 		}
+		
+		return true;
+	
+	}
+	
+	public void displayIntro(CommandSender sender)
+	{
+		
+		sender.sendMessage(ChatColor.GRAY + "[AntiRelog] This is version " + version + ".");
+		
+	}
+	
+	public void displayRemainingTime(Player player)
+	{
+		
+		
+		
+	}
+	
+	public boolean playerCheck(CommandSender sender)
+	{
+		
+		if (sender instanceof Player)
+		{
+			
+			return true;
+			
+		}
+		
+		sender.sendMessage(name + ChatColor.RED + "You must be a player to use this command!");
+		
 		return false;
+		
+	}
 	
-}
+	public void getRemainingTime(Player player)
+	{
+		
+		if (DataBase.isInCombat(player))
+		{
+			
+			long end = DataBase.getEndingTime(player);
+			
+			if (!Clock.isEnded(end))
+			{
+				
+				long remaining = Clock.getElapsed(Clock.getTime(), end);
+				
+				player.sendMessage(name + ChatColor.DARK_AQUA +  "You have " + remaining + " seconds before combat ends.");
+				
+			}
+			
+		}
+		else
+		{
+			
+			player.sendMessage(name + ChatColor.GREEN + "You are not currently in combat.");
+			
+		}
+		
+	}
+	
+	public void unbanPlayer(CommandSender sender, String player) throws IOException
+	{
+		
+		if (DataBase.isBanned(player))
+		{
+			
+			DataBase.unbanPlayer(player);
+			
+			sender.sendMessage(name + ChatColor.GREEN + ChatColor.GREEN + player + " was unbanned.");
+			
+			AntiRelog.logger.log(player, sender, 3);
+			
+		}
+		else
+		{
+			
+			sender.sendMessage(name + ChatColor.RED + "Player " + player + " was not banned. Check the spelling and case and try again.");
+			
+		}
+		
+	}
+	
+	public void noPermissions(CommandSender sender)
+	{
+		
+		sender.sendMessage(name + ChatColor.RED + "You do not have permission!");
+		
+	}
+	
+	public void unknownCommand(CommandSender sender)
+	{
+		
+		sender.sendMessage(name + ChatColor.RED + "Unknown command.");
+		
+	}
 		
 }
-
-		
-
-	
-

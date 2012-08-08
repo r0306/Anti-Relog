@@ -1,141 +1,181 @@
-package com.github.r0306.antirelog;
-
+package com.github.r0306.AntiRelog;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.FileConfigurationOptions;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.logging.Logger;
+import com.github.r0306.AntiRelog.Listeners.DamageListener;
+import com.github.r0306.AntiRelog.Listeners.DeathListener;
+import com.github.r0306.AntiRelog.Listeners.FreezeCommand;
+import com.github.r0306.AntiRelog.Listeners.LogPrevention;
+import com.github.r0306.AntiRelog.Listeners.LoginListener;
+import com.github.r0306.AntiRelog.Loggers.LogHandler;
+import com.github.r0306.AntiRelog.Loggers.PVPLogger;
+import com.github.r0306.AntiRelog.Storage.DataBase;
+import com.github.r0306.AntiRelog.Util.Plugin;
+import com.github.r0306.AntiRelog.Util.Util;
 
-public class antirelog extends JavaPlugin{
+public class AntiRelog extends JavaPlugin
+{
+
+	public static PVPLogger logger;
 	
-	public static boolean WorldGuard = false;
-	public static boolean Factions = false;
-	public static boolean Citizens = false;
-	List<String> list = Arrays.asList("tp", "warp", "home", "tpa", "creative");
-	private Executor myExecutor;
-	public static Logger log = Logger.getLogger("Minecraft");
-	String[] cmdd = null;
-	public Player playerLog = null;
+	public void onEnable()
+	{
+		
+		new Plugin(this);
+		
+		new LogHandler();
+		
+		try
+		{
+		
+			logger = new PVPLogger();
+		
+		} catch (IOException e) {
 
-	
-	public void onEnable() {
+			e.printStackTrace();
 
+		}
+		
+		registerExecutors();
+		
+		registerListeners();
+		
 		loadConfiguration();
-        getServer().getPluginManager().registerEvents(new LoginListener(this), this);
-        getServer().getPluginManager().registerEvents(new DamageListener(this), this);
-        getServer().getPluginManager().registerEvents(new FreezeCommand(this), this);
-        getServer().getPluginManager().registerEvents(new LogPrevention(this), this);
-        getServer().getPluginManager().registerEvents(new DeathListener(this), this);
-        getServer().getPluginManager().registerEvents(new PreLogin(this), this);
-    	if (this.getConfig().getStringList("DisallowedCMDs") != null) {
-    		String commands = this.getConfig().getStringList("DisallowedCMDs").toString().replace("[", "");
-    		String commands1 = commands.replace("]", "");
-    		cmdd = commands1.split(", ");
-    		}
-//        task = new MyTask(this);
-        log.addHandler(new Handler() {
-			@Override
-			public void publish(LogRecord logRecord) {
-                String mystring = logRecord.getMessage();
-                if(mystring.contains(" lost connection: "))
-                {
-                        String myarray[] = mystring.split(" ");
-                        String DisconnectMessage = myarray[3];
-                        LogPrevention.DisconnectMsg = DisconnectMessage;
-                }
-			}
-
-			@Override
-			public void flush() {
-
-				
-			}
-
-			@Override
-			public void close() throws SecurityException {
-				
-			}
-            
-        });
-	
-		System.out.println("AntiRelog version [" + getDescription().getVersion() + "] loaded.");
-    	myExecutor = new Executor(this);
-    	getCommand("ar").setExecutor(myExecutor);
-    	getCommand("antirelog").setExecutor(myExecutor);
-		Plugin pex = this.getServer().getPluginManager().getPlugin("PermissionsEx");
-		if (pex == null) {
-			System.out.println("[AntiRelog] Permissions system not detected. Defaulting to OP.");
-		} 
-		else if (! pex.isEnabled()) {
-			System.out.println("[AntiRelog] PermissionsEX is not enabled. Defaulting to OP.");
-		} else {
-			System.out.println("[AntiRelog] Using PermissionsEX.");
-		}
-        Plugin wg = this.getServer().getPluginManager().getPlugin("WorldGuard");
-        if (wg == null) {
-        	System.out.println("[AntiRelog] WorldGuard not detected. But thats okay! :)");
-        } else {
-        	WorldGuard = true;
-        	System.out.println("[AntiRelog] Using WorldGuard configurations for PVP zones.");
-        }
-        Plugin fact = this.getServer().getPluginManager().getPlugin("Factions");
-        if (fact == null) {
-        	System.out.println("[AntiRelog] Factions not detected. But thats okay! :)");
-        } else {
-        	Factions = true;
-        	System.out.println("[AntiRelog] Getting Factions areas for PVP zones.");
-        }
-        Plugin citizen = this.getServer().getPluginManager().getPlugin("Citizens");
-        if (citizen == null) {
-        	System.out.println("[AntiRelog] Citizens not detected. But thats okay! :)");
-        } else {
-        	Citizens = true;
-        	System.out.println("[AntiRelog] Citizens compitibility is enabled.");
-        }
+		
+		System.out.println("AntiRelog version [" + getDescription().getVersion() + "] loaded");
+		
 	}
+	
+	public void onDisable()
+	{
+		
+		try
+		{
+		
+			shutdownSequence();
+		
+		} catch (IOException e) {
 
-	public void onDisable() {
-		for (Player player : LogPrevention.TempBan) {
-			playerLog = player;
-			player.setBanned(false);
-        	PVPLogger log = new PVPLogger(this);
-			log.WriteUnbannedShutDown();
+			e.printStackTrace();
+
 		}
+		
 		System.out.println("AntiRelog version [" + getDescription().getVersion() + "] unloaded");
-}
-	public void loadConfiguration() {
+		
+	}
+	
+	public void registerExecutors()
+	{
+		
+		getCommand("ar").setExecutor(new Executor());
+		getCommand("arl").setExecutor(new Executor());
+		getCommand("antirelog").setExecutor(new Executor());
+
+	}
+	
+	public void registerListeners()
+	{
+		
+		getServer().getPluginManager().registerEvents(new DamageListener(), this);
+		getServer().getPluginManager().registerEvents(new DeathListener(), this);
+		getServer().getPluginManager().registerEvents(new LoginListener(), this);
+		getServer().getPluginManager().registerEvents(new LogPrevention(), this);
+		getServer().getPluginManager().registerEvents(new FreezeCommand(), this);
+		
+	}
+	
+	public void shutdownSequence() throws IOException
+	{
+		
+		for (String s : DataBase.getBanned())
+		{
+			
+			logger.log(s, null, 2);
+			
+		}
+		
+	}
+			
+	private void loadConfiguration()
+	{
+		
 		FileConfiguration cfg = this.getConfig();
 		FileConfigurationOptions cfgOptions = cfg.options();
-		cfg.addDefault("MOTDToggle", "on");
-		cfg.addDefault("MOTD", "Welcome to the server.");
-		cfg.addDefault("StunMSG", "There's no running away from a battle!");
-		cfg.addDefault("StunDuration", 7);
-		cfg.addDefault("BanDuration", 5);
-		cfg.addDefault("MobLogger", "off");
-		cfg.addDefault("PassiveMobLogger", "off");
-		cfg.addDefault("DropItems", "on");
-		cfg.addDefault("PlayerBanMsg", "You have been banned for 5 minutes due to PVP logging.");
-		cfg.addDefault("TempBanMsgToggle", "on");
-		cfg.addDefault("TempBanMsg", "Cowards will not be tolerated on this server.");
-		cfg.addDefault("UnbanMSGToggle", "on");
-		cfg.addDefault("UnbanMSG", "You logged off during PVP and as a result you have lost your items.");
-		cfg.addDefault("CMDToggle", "on");
-		cfg.addDefault("DisallowAll", "off");
-		cfg.addDefault("DisallowedCMDs", list);
-		cfg.addDefault("Tag-Message", "You have been tagged and are now in combat. Logging off will result in penalty.");
-		cfg.addDefault("UnTag-Message", "You are not in combat anymore.");
-		cfgOptions.copyDefaults(true);
-		cfgOptions.header("This is the AntiRelog configuration file." + System.getProperty( "line.separator" ) + "Editing this file with Notepad++ is strongly recommended." + System.getProperty( "line.separator" ) +  "Save the file and reload the server after you are done editing for changes to take place." + "Here are the explanations for each option:" + System.getProperty( "line.separator" ) + "MOTDToggle: Set to true or on to turn on MOTD. Set to anything else to turn it off." + System.getProperty( "line.separator" ) + "MOTD: This field contains the message that players will see when they join the server." + System.getProperty( "line.separator" ) + "StunMSG: This sets the message shown if players try to use a command during PVP." + System.getProperty( "line.separator" ) + "StunDuration: This defines the amount of time in SECONDS that players must wait before using commands if they are hit. Set to 0 if you want to disable this feature." + System.getProperty( "line.separator" ) + "BanDuration: This defines the amount of time in MINUTES that a player will be banned if he/she logs off while in combat. Set to 0 to disable this feature." + System.getProperty( "line.separator" ) + "MobLogger: Setting this feature to 'on' or 'true' will cause players to be classified as in PVP when attacking/attacked by a mob." + System.getProperty( "line.separator" ) + "PassiveMobLogger: Must have 'MobLogger' enabled to work. Setting this field to 'on' or 'true' will enable the mob logging feature for passive mobs." + System.getProperty( "line.separator" ) + "DropItems: Set this to on or true to make players drop their items if they PVP log." + System.getProperty( "line.separator" ) + "PlayerBanMsg: Players who have been temporarily banned will see this message if they try to connect." +  System.getProperty( "line.separator" ) + "TempBanMsgToggle: Set this to on or true to alert the server when someone logs off during PVP." + System.getProperty( "line.separator" ) + "TempBanMsg: This message will be displayed to everyone on the server when a player logs off while in combat." + System.getProperty( "line.separator" ) + "UnbanMSGToggle: Set this to on or true to send a message to players who have been unbanned when they log on." + System.getProperty( "line.separator" ) + "UnbanMSG: Message players will see when they are unbanned and log back on." + System.getProperty( "line.separator" ) + "CMDToggle: Set this to on block specific commands in PVP. Set to off to disable this function. (Overrides DisallowAll)." + System.getProperty( "line.separator" ) + "DisallowAll: Set this to 'on' or 'true' to disallow all commands while in PVP. (Overrides command list)." + System.getProperty( "line.separator" ) + "DisallowedCMDs: This is a list of the disallowed commands. Add to the list using the same format as shown." + System.getProperty( "line.separator" ) + "Tag-Message: This is the message sent when players enter combat." + System.getProperty( "line.separator" ) + "UnTag-Message: This is the message sent when players are not in combat anymore.");
-		cfgOptions.copyHeader(true);
-		saveConfig();
-	}
+		
+		cfg.addDefault("MOTD.Enabled", true);
+		cfg.addDefault("MOTD.Message", "<yellow>Welcome to the server.");
+		
+		cfg.addDefault("Mobs.Logger-Enabled", false);
+		cfg.addDefault("Mobs.Passive-Logger-Enabled", false);
+		
+		cfg.addDefault("PvP.Tag-Message.Enabled", true);
+		cfg.addDefault("PvP.Tag-Message.Tag", "<red>You have been tagged and are now in combat. Logging off will result in penalty.");
+		cfg.addDefault("PvP.Tag-Message.Un-Tag", "<green>You are not in combat anymore.");
+				
+		cfg.addDefault("PvP.Ban.Duration", 5);
+		cfg.addDefault("PvP.Ban.Message", "<red>You have been banned for 5 minutes due to PVP logging.");
+		
+		cfg.addDefault("PvP.Ban.Broadcast-Enabled", true);
+		cfg.addDefault("PvP.Ban.Broadcast-Message", "<green>Cowards will not be tolerated on this server.");
 
+		cfg.addDefault("PvP.Unban.Message-Enabled", true);
+		cfg.addDefault("PvP.Unban.Message", "<darkaqua>You logged off during PVP and as a result you have lost your items.");
+		
+		cfg.addDefault("PvP.CombatLog.NPC", false);
+					
+		cfg.addDefault("PvP.CombatLog.Drop.Items", true);
+		cfg.addDefault("PvP.CombatLog.Drop.Armor", true);
+		cfg.addDefault("PvP.CombatLog.Drop.Exp", true);
+		
+		cfg.addDefault("PvP.Command.Disallow-All", false);
+		
+		cfg.addDefault("PvP.Command.Freeze-Duration", 7);
+		cfg.addDefault("PvP.Command.Freeze-Message", "<red>There's no running away from a battle!");
+
+		cfg.addDefault("PvP.Command.Disallowed-List", Arrays.asList("tp", "warp", "home", "tpa", "creative"));
+		
+		cfgOptions.copyDefaults(true);
+		
+		cfgOptions.header(getHeader());
+		
+		cfgOptions.copyHeader(true);
+		
+		saveConfig();
+		
+	}
+	
+	private String getHeader()
+	{
+		
+		String newLine = Util.newLine;
+		
+		return "This is the AntiRelog configuration file." + newLine + 
+			   "Editing this file with Notepad++ is strongly recommended." + newLine +  
+			   "Save the file and reload the server after you are done editing for changes to take place." + 
+			   "Here are the explanations for each option:" + newLine + 
+			   "MOTD: This field contains the message that players will see when they join the server. Set enabled to true or false to toggle on or off." + newLine +
+			   "MOTD Message: Displays the message players will see when they join the server." + newLine + newLine +
+			   "Mob Logger: Set this to true enable AntiRelog for hostile mobs. Players who log off during combat will face the same consequences as if they logged against another player." + newLine +
+			   "Passive Mob Logger: Set this to true to enable Mob Logger for passive mobs. Must have Mob Logger enabled to use this." + newLine + newLine +
+			   "Tag Message: This is the message sent when players enter combat." + newLine + 
+			   "UnTag Message: This is the message sent when players are not in combat anymore." + newLine + newLine +
+			   "Ban Duration: This defines the amount of time in MINUTES that a player will be banned if he/she logs off while in combat. Set to 0 to disable this feature." + newLine +
+			   "Ban Message: Players who have been temporarily banned from PvP logging will see this message if they try to connect." + newLine +
+			   "Ban Broadcast: Set this to true to alert all players on the server when someone combat logs." + newLine +
+			   "Ban Broadcast Message: This message will be displayed to everyone on the server when a player logs off while in combat." + newLine + newLine +
+			   "Unban Message Enabled: Set this to true to send a message to players when they log on after being unbanned." + newLine +
+			   "Unban Message: This is the message that will be sent to players when they log on after being unbanned." + newLine + newLine +
+			   "NPC: Setting this to true spawns an NPC in place of the combat logger. The NPC will fight back and drop the items if killed. If the NPC kills the attacker, it will despawn." + newLine +
+			   "Drops: If these are set to true, the player will drop that equipment/item upon combat logging. If NPCs are enabled, the NPC will drop those items upon being killed." + newLine + newLine +
+			   "Disallow All: Set this to true to disallow all commands while in PVP. (Overrides command list)." + newLine +
+			   "Freeze Duration: This defines the amount of time in SECONDS that players must wait before using commands if they are hit. Set to 0 if you want to disable this feature." + newLine + 
+			   "Freeze Message: This sets the message shown if players try to use a command during PVP." + newLine + 
+               "DisallowedCMDs: This is a list of the disallowed commands. Add to the list using the same format as shown. Set to null to allow all commands.";
+		
+	}
+	
 }
-	   

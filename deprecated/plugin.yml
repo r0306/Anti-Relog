@@ -1,6 +1,6 @@
 name: AntiRelog
-main: com.github.r0306.AntiRelog.AntiRelog
-version: 2.0.0
+main: com.github.r0306.antirelog.antirelog
+version: 1.7.0
 commands:
   ar:
     description: Shows plugin information.
