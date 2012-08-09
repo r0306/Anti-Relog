@@ -163,6 +163,27 @@ public class DataBase
 		
 	}
 	
+	public static boolean containsNPCname(String name)
+	{
+		
+		return npcs.containsKey(name);
+		
+	}
+	
+	public static HumanNPC getNPCByName(String name)
+	{
+		
+		if (containsNPCname(name))
+		{
+			
+			return npcs.get(name);
+			
+		}
+		
+		return null;
+		
+	}
+		
 	public static void addInCombat(Player player, Long time)
 	{
 		

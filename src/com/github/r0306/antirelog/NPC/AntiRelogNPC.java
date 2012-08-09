@@ -8,6 +8,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 
 import com.github.r0306.AntiRelog.Storage.DataBase;
 import com.github.r0306.AntiRelog.Util.Configuration;
@@ -20,48 +21,62 @@ public class AntiRelogNPC
 	{
 				
 		NPCManager npcHandler = new NPCManager(Plugin.getPlugin());
-		
-		NPC npc = npcHandler.spawnHumanNPC(player.getName(), player.getLocation());
-		
-		HumanNPC humanNPC = (HumanNPC) npc;
+/*
+		HumanNPC humanNPC = (HumanNPC) npcHandler.spawnHumanNPC(player.getName(), player.getLocation());
 
 		humanNPC.getInventory().setContents(player.getInventory().getContents());		
 		
 		humanNPC.getInventory().setArmorContents(player.getInventory().getArmorContents());
 		
 		DataBase.registerNPC(humanNPC);
+		*/
+		setTarget(player, DataBase.getLastDamager(player));//DataBase.getLastDamager(player));
 		
-		setTarget(humanNPC, DataBase.getLastDamager(player));//DataBase.getLastDamager(player));
 		
 	}
 	
-	public static void setTarget(final HumanNPC npc, final Entity target)
+	public static void setTarget(final Player player, final Entity target)
 	{
+	
+		NPCManager npcHandler = new NPCManager(Plugin.getPlugin());
+		
+		final HumanNPC npc = (HumanNPC) npcHandler.spawnHumanNPC(player.getName(), player.getLocation());
+
+		npc.getInventory().setContents(player.getInventory().getContents());		
+		
+		npc.getInventory().setArmorContents(player.getInventory().getArmorContents());
 		
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Plugin.getPlugin(), new Runnable()
 		{
 
-			final LivingEntity bukkitNPC = (LivingEntity) npc.getBukkitEntity();
+			int counter = 0;
 			
 			@Override
         	public void run()
 			{
-        		System.out.println(bukkitNPC.getLocation().distance(target.getLocation()));
-        		
-
-
-									
+										
+				LivingEntity bukkitNPC = (LivingEntity) npc.getBukkitEntity();
+				
+				npc.lookAtPoint(((LivingEntity)target).getEyeLocation().add(0, 0.5, 0));
+				
 					if (bukkitNPC.getLocation().distance(target.getLocation()) < 30)
 					{
 						
-						if (npc.getInventory().contains(Material.BOW) && npc.getInventory().contains(Material.ARROW))
+						if (npc.getInventory().contains(Material.BOW) && npc.getInventory().contains(Material.ARROW) && counter % 40 == 0)
 						{
+									
+						//	switchToHand(npc, Material.BOW);
 							
-							switchToHand(npc, Material.BOW);
+							Location l = bukkitNPC.getLocation();
 
+							l.setYaw(npc.getEntity().yaw);
+							npc.getEntity().pitch = bukkitNPC.getLocation().getPitch();
+							l.setPitch(npc.getEntity().pitch);
+							bukkitNPC.teleport(l);
+						
 							bukkitNPC.launchProjectile(Arrow.class);
 							
-							removeItem(npc, Material.ARROW, 1);
+							//removeItem(npc, Material.ARROW, 1);
 							
 						}
 							
@@ -70,52 +85,70 @@ public class AntiRelogNPC
 					else if (bukkitNPC.getLocation().distance(target.getLocation()) < 5)
 					{
 						
-						npc.animateArmSwing();
+						if (counter % 30 == 0)
+						{
 						
-						bukkitNPC.damage((int) calculateDamage(npc, target), target);
+							if (bukkitNPC.getLocation().distance(target.getLocation()) < 3)
+							{
+							
+								npc.animateArmSwing();
+						
+								((LivingEntity)target).damage((int) calculateDamage(npc, target), target);
+								
+							}
+							
+						}
 						
 					}
 					else
 					{
 						
-						npc.moveTo(Bukkit.getPlayer("Player").getLocation());
+						npc.walkTo(target.getLocation());
 						
 					}
 				
-			
+					counter ++;
+					
 			}
         	
 		}, 1L, 1L);
 		
 	}
 	
+    public static float getLookAtYaw(Vector motion) {
+        double dx = motion.getX();
+        double dz = motion.getZ();
+        double yaw = 0;
+        // Set yaw
+        if (dx != 0) {
+            // Set yaw start value based on dx
+            if (dx < 0) {
+                yaw = 1.5 * Math.PI;
+            } else {
+                yaw = 0.5 * Math.PI;
+            }
+            yaw -= Math.atan(dz / dx);
+        } else if (dz < 0) {
+            yaw = Math.PI;
+        }
+        return (float) (-yaw * 180 / Math.PI - 90);
+    }
+		
 	public static void switchToHand(HumanNPC npc, Material item)
 	{
 		
-		if (npc.getInventory().getItemInHand().getType() != item)
+		if (npc.getInventory().getItemInHand() != null && npc.getInventory().getItemInHand().getType() != item)
 		{
 		
-			ItemStack itemstack = npc.getInventory().getItem(item.getId());
+			int slot = getSlot(npc, item);
+			
+			ItemStack itemstack = npc.getInventory().getItem(slot);
 			
 			ItemStack currentHand = npc.getInventory().getItemInHand();
-			
-			if (currentHand != null)
-			{
-			
-				npc.getInventory().remove(currentHand);
-			
-				npc.getInventory().setItemInHand(itemstack);
-			
-				npc.getInventory().addItem(currentHand);
-				
-			}
-			
-			else
-			{
-				
-				npc.getInventory().setItemInHand(itemstack);
-				
-			}
+									
+			npc.getInventory().setItemInHand(itemstack);
+		
+			npc.getInventory().addItem(currentHand);
 						
 		}
 		
@@ -126,8 +159,10 @@ public class AntiRelogNPC
 		
 		if (npc.getInventory().contains(item))
 		{
-			
-			int currentAmount = npc.getInventory().getItem(item.getId()).getAmount();
+		
+			int slot = getSlot(npc, item);
+
+			int currentAmount = npc.getInventory().getItem(slot).getAmount();
 			
 			if (!(currentAmount - amount < 0))
 			{
@@ -142,13 +177,61 @@ public class AntiRelogNPC
 				else
 				{
 				
-					npc.getInventory().getItem(item.getId()).setAmount(currentAmount - amount);
+					npc.getInventory().getItem(slot).setAmount(currentAmount - amount);
 					
 				}
 
 			}
 			
 		}
+		
+	}
+	
+	public static int getSlot(HumanNPC npc, Material type)
+	{
+		
+		int slot = 0;
+		
+		for (ItemStack i : npc.getInventory().getContents())
+		{
+			
+			if (i != null)
+			{
+				
+				if (i.getType() == type)
+				{
+					
+					return slot;
+					
+				}
+				
+			}
+			
+			slot ++;
+			
+		}
+		
+		return -1;
+		
+	}
+	
+	public static Arrow shootArrow(HumanNPC npc)
+	{
+		
+		LivingEntity entity = (LivingEntity) npc.getBukkitEntity();
+		
+		npc.getEntity().boundingBox.shrink(0.5, 0.5, 0.5);
+		
+		Location location = entity.getEyeLocation();
+		
+		Vector vector = entity.getEyeLocation().toVector().add(entity.getLocation().getDirection().normalize().multiply(2)).multiply(5);
+		
+		Arrow arrow = npc.getBukkitEntity().getWorld().spawnArrow(location, vector, 2f, 1f);
+		
+		arrow.setShooter(entity);
+		
+		
+		return arrow;
 		
 	}
 	

@@ -45,7 +45,7 @@ public class AntiRelog extends JavaPlugin
 		registerListeners();
 		
 		loadConfiguration();
-		
+
 		System.out.println("AntiRelog version [" + getDescription().getVersion() + "] loaded");
 		
 	}
