@@ -1,8 +1,13 @@
 package com.github.r0306.AntiRelog.NPC;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -10,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
+import com.github.r0306.AntiRelog.AntiRelog;
 import com.github.r0306.AntiRelog.Storage.DataBase;
 import com.github.r0306.AntiRelog.Util.Configuration;
 import com.github.r0306.AntiRelog.Util.Plugin;
@@ -19,33 +25,22 @@ public class AntiRelogNPC
 	
 	public static void spawnNPC(Player player)
 	{
-				
-		NPCManager npcHandler = new NPCManager(Plugin.getPlugin());
-/*
-		HumanNPC humanNPC = (HumanNPC) npcHandler.spawnHumanNPC(player.getName(), player.getLocation());
+		
+		HumanNPC humanNPC = (HumanNPC) AntiRelog.npcHandler.spawnHumanNPC(player.getName(), player.getLocation());
 
 		humanNPC.getInventory().setContents(player.getInventory().getContents());		
 		
 		humanNPC.getInventory().setArmorContents(player.getInventory().getArmorContents());
 		
 		DataBase.registerNPC(humanNPC);
-		*/
-		setTarget(player, DataBase.getLastDamager(player));//DataBase.getLastDamager(player));
 		
+		setTarget(humanNPC, DataBase.getLastDamager(player));
 		
 	}
 	
-	public static void setTarget(final Player player, final Entity target)
+	public static void setTarget(final HumanNPC npc, final Entity target)
 	{
-	
-		NPCManager npcHandler = new NPCManager(Plugin.getPlugin());
-		
-		final HumanNPC npc = (HumanNPC) npcHandler.spawnHumanNPC(player.getName(), player.getLocation());
-
-		npc.getInventory().setContents(player.getInventory().getContents());		
-		
-		npc.getInventory().setArmorContents(player.getInventory().getArmorContents());
-		
+			
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Plugin.getPlugin(), new Runnable()
 		{
 
@@ -55,59 +50,56 @@ public class AntiRelogNPC
         	public void run()
 			{
 										
+				double distance = distance(npc, target);
+				
 				LivingEntity bukkitNPC = (LivingEntity) npc.getBukkitEntity();
-				
-				npc.lookAtPoint(((LivingEntity)target).getEyeLocation().add(0, 0.5, 0));
-				
-					if (bukkitNPC.getLocation().distance(target.getLocation()) < 30)
+								
+				if (distance > 4 && distance < 30)
+				{
+						
+					if (npc.getInventory().contains(Material.BOW) && npc.getInventory().contains(Material.ARROW) && counter % 40 == 0)
 					{
-						
-						if (npc.getInventory().contains(Material.BOW) && npc.getInventory().contains(Material.ARROW) && counter % 40 == 0)
-						{
-									
-						//	switchToHand(npc, Material.BOW);
-							
-							Location l = bukkitNPC.getLocation();
+								
+						switchToHand(npc, Material.BOW);
 
-							l.setYaw(npc.getEntity().yaw);
-							npc.getEntity().pitch = bukkitNPC.getLocation().getPitch();
-							l.setPitch(npc.getEntity().pitch);
-							bukkitNPC.teleport(l);
+						bukkitNPC.launchProjectile(Arrow.class);
 						
-							bukkitNPC.launchProjectile(Arrow.class);
+						removeItem(npc, Material.ARROW, 1);
+						
+					}
+						
+				}
+				
+				else if (distance <= 4)
+				{
+					
+					if (counter % 30 == 0)
+					{
+					
+						if (bukkitNPC.getLocation().distance(target.getLocation()) < 3)
+						{
+						
+							npc.walkTo(getApproximateTargetLocation(target));
 							
-							//removeItem(npc, Material.ARROW, 1);
+							npc.animateArmSwing();
+					
+							((LivingEntity)target).damage((int) calculateDamage(npc, target), target);
+							
+							target.setVelocity(bukkitNPC.getLocation().getDirection().normalize().multiply(2));
 							
 						}
-							
+						
 					}
 					
-					else if (bukkitNPC.getLocation().distance(target.getLocation()) < 5)
-					{
-						
-						if (counter % 30 == 0)
-						{
-						
-							if (bukkitNPC.getLocation().distance(target.getLocation()) < 3)
-							{
-							
-								npc.animateArmSwing();
-						
-								((LivingEntity)target).damage((int) calculateDamage(npc, target), target);
-								
-							}
-							
-						}
-						
-					}
-					else
-					{
-						
-						npc.walkTo(target.getLocation());
-						
-					}
-				
-					counter ++;
+				}
+				else
+				{
+					
+					npc.walkTo(target.getLocation());
+					
+				}
+			
+				counter ++;
 					
 			}
         	
@@ -115,25 +107,13 @@ public class AntiRelogNPC
 		
 	}
 	
-    public static float getLookAtYaw(Vector motion) {
-        double dx = motion.getX();
-        double dz = motion.getZ();
-        double yaw = 0;
-        // Set yaw
-        if (dx != 0) {
-            // Set yaw start value based on dx
-            if (dx < 0) {
-                yaw = 1.5 * Math.PI;
-            } else {
-                yaw = 0.5 * Math.PI;
-            }
-            yaw -= Math.atan(dz / dx);
-        } else if (dz < 0) {
-            yaw = Math.PI;
-        }
-        return (float) (-yaw * 180 / Math.PI - 90);
-    }
+	public static double distance(HumanNPC npc, Entity target)
+	{
 		
+		return npc.getBukkitEntity().getLocation().distance(target.getLocation());
+		
+	}
+			
 	public static void switchToHand(HumanNPC npc, Material item)
 	{
 		
@@ -187,6 +167,26 @@ public class AntiRelogNPC
 		
 	}
 	
+	public static void getOptimalWeapon(HumanNPC npc)
+	{
+		
+		ItemStack item = null;
+		
+		for (Material material : getWeapons())
+		{
+			
+			if (npc.getInventory().contains(material))
+			{
+				
+				switchToHand(npc, material);
+				break;
+				
+			}
+			
+		}
+		
+	}
+	
 	public static int getSlot(HumanNPC npc, Material type)
 	{
 		
@@ -214,27 +214,7 @@ public class AntiRelogNPC
 		return -1;
 		
 	}
-	
-	public static Arrow shootArrow(HumanNPC npc)
-	{
 		
-		LivingEntity entity = (LivingEntity) npc.getBukkitEntity();
-		
-		npc.getEntity().boundingBox.shrink(0.5, 0.5, 0.5);
-		
-		Location location = entity.getEyeLocation();
-		
-		Vector vector = entity.getEyeLocation().toVector().add(entity.getLocation().getDirection().normalize().multiply(2)).multiply(5);
-		
-		Arrow arrow = npc.getBukkitEntity().getWorld().spawnArrow(location, vector, 2f, 1f);
-		
-		arrow.setShooter(entity);
-		
-		
-		return arrow;
-		
-	}
-	
 	public static double calculateDamage(HumanNPC npc, Entity target)
 	{
 		
@@ -342,6 +322,55 @@ public class AntiRelogNPC
 		}
 		
 		return damage - (damage * defense);
+		
+	}
+	
+	public static List<Material> getWeapons()
+	{
+	
+		return Arrays.asList(new Material[]{Material.DIAMOND_SWORD, Material.GOLD_SWORD, Material.IRON_SWORD, Material.STONE_SWORD,
+				                            Material.WOOD_SWORD, Material.DIAMOND_AXE, Material.GOLD_AXE, Material.IRON_AXE});
+		
+		
+	}
+	
+	public static Location getApproximateTargetLocation(Entity target)
+	{
+		
+		Location location = target.getLocation();
+		
+		Random random = new Random();
+		
+		return location.add(random.nextDouble() * 3 - 1.5, 0, random.nextDouble() * 3 - 1.5);
+		
+	}
+	
+	public static BlockFace getTargetFacing(Entity target)
+	{
+	
+         float y = target.getLocation().getYaw();
+         if( y < 0 ) y += 360;
+         y %= 360;
+         int i = (int)((y+8) / 22.5);
+         
+         if(i == 0) return BlockFace.WEST;
+         else if(i == 1) return BlockFace.NORTH_WEST;
+         else if(i == 2) return BlockFace.NORTH_WEST;
+         else if(i == 3) return BlockFace.NORTH_WEST;
+         else if(i == 4) return BlockFace.NORTH;
+         else if(i == 5) return BlockFace.NORTH_EAST;
+         else if(i == 6) return BlockFace.NORTH_EAST;
+         else if(i == 7) return BlockFace.NORTH_EAST;
+         else if(i == 8) return BlockFace.EAST;
+         else if(i == 9) return BlockFace.SOUTH_EAST;
+         else if(i == 10) return BlockFace.SOUTH_EAST;
+         else if(i == 11) return BlockFace.SOUTH_EAST;
+         else if(i == 12) return BlockFace.SOUTH;
+         else if(i == 13) return BlockFace.SOUTH_WEST;
+         else if(i == 14) return BlockFace.SOUTH_WEST;
+         else if(i == 15) return BlockFace.SOUTH_WEST;
+
+         return BlockFace.WEST;
 		
 	}
 		

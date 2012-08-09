@@ -13,6 +13,7 @@ import com.github.r0306.AntiRelog.Listeners.LogPrevention;
 import com.github.r0306.AntiRelog.Listeners.LoginListener;
 import com.github.r0306.AntiRelog.Loggers.LogHandler;
 import com.github.r0306.AntiRelog.Loggers.PVPLogger;
+import com.github.r0306.AntiRelog.NPC.NPCManager;
 import com.github.r0306.AntiRelog.Storage.DataBase;
 import com.github.r0306.AntiRelog.Util.Plugin;
 import com.github.r0306.AntiRelog.Util.Util;
@@ -21,6 +22,7 @@ public class AntiRelog extends JavaPlugin
 {
 
 	public static PVPLogger logger;
+	public static NPCManager npcHandler;
 	
 	public void onEnable()
 	{
@@ -39,6 +41,8 @@ public class AntiRelog extends JavaPlugin
 			e.printStackTrace();
 
 		}
+		
+		npcHandler = new NPCManager(this);
 		
 		registerExecutors();
 		
