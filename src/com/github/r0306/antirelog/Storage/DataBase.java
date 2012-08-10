@@ -1,5 +1,7 @@
 package com.github.r0306.AntiRelog.Storage;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,24 +10,49 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import com.github.r0306.AntiRelog.AntiRelog;
 import com.github.r0306.AntiRelog.NPC.HumanNPC;
+import com.github.r0306.AntiRelog.NPC.NPC;
 import com.github.r0306.AntiRelog.Util.Clock;
-import com.github.r0306.AntiRelog.Util.Configuration;
 
 public class DataBase
 {
 
-	private static Set<String> loginQueue = new HashSet<String>();
 	private static Set<String> banned = new HashSet<String>();
+	private static HashMap<String, Set<Integer>> loginQueue = new HashMap<String, Set<Integer>>();
 	private static HashMap<String, Entity> lastDamager = new HashMap<String, Entity>();
-	private static HashMap<String, HumanNPC> npcs = new HashMap<String, HumanNPC>();
 	private static HashMap<String, Long> inCombat = new HashMap<String, Long>();
 	private static HashMap<String, Integer> ids = new HashMap<String, Integer>();
 	
-	public static void addToLoginQueue(Player player)
+	public static void loadQueue() throws FileNotFoundException, ClassNotFoundException, IOException
 	{
 		
-		loginQueue.add(player.getName());
+		loginQueue = Persistence.loadQueue();
+		
+	}
+	
+	public static void saveQueue() throws IOException
+	{
+		
+		Persistence.saveQueue();
+		
+	}
+	
+	public static void addToLoginQueue(String player, Set<Integer> items)
+	{
+		
+		loginQueue.put(player, items);
+	
+	}
+	
+	public static void clearAll()
+	{
+		
+		banned = null;
+		loginQueue = null;
+		lastDamager = null;
+		inCombat = null;
+		ids = null;
 		
 	}
 	
@@ -44,10 +71,17 @@ public class DataBase
 	public static boolean isLoginQueued(Player player)
 	{
 		
-		return loginQueue.contains(player.getName());
+		return loginQueue.containsKey(player.getName());
 		
 	}
 	
+	public static HashMap<String, Set<Integer>> getLoginQueue()
+	{
+		
+		return loginQueue;
+		
+	}
+		
 	public static void banPlayer(Player player)
 	{
 		
@@ -62,13 +96,6 @@ public class DataBase
 		{
 			
 			banned.remove(player);
-			
-			if (Configuration.unbanMessageEnabled())
-			{
-				
-				loginQueue.add(player);
-				
-			}
 			
 		}
 		
@@ -88,10 +115,10 @@ public class DataBase
 		
 	}
 
-	public static Set<String> getLoginQueue()
+	public static Set<Integer> getItems(Player player)
 	{
 		
-		return loginQueue;
+		return loginQueue.get(player.getName());
 		
 	}
 	
@@ -136,54 +163,87 @@ public class DataBase
 		return lastDamager.containsKey(player.getName());
 		
 	}
-	
-	public static void registerNPC(HumanNPC npc)
+
+	public static boolean containsNPC(String name)
 	{
 		
-		npcs.put(npc.getName(), npc);
-		
-	}
-	
-	public static void removeNPC(HumanNPC npc)
-	{
-		
-		if (containsNPC(npc))
-		{
-			
-			npcs.remove(npc.getName());
-			
-		}
-		
-	}
-		
-	public static boolean containsNPC(HumanNPC npc)
-	{
-		
-		return npcs.containsKey(npc.getName());
-		
-	}
-	
-	public static boolean containsNPCname(String name)
-	{
-		
-		return npcs.containsKey(name);
+		return AntiRelog.npcHandler.getHumanNPCByName(name).size() > 0;
 		
 	}
 	
 	public static HumanNPC getNPCByName(String name)
 	{
 		
-		if (containsNPCname(name))
+		if (containsNPC(name))
 		{
 			
-			return npcs.get(name);
+			return (HumanNPC) AntiRelog.npcHandler.getHumanNPCByName(name).get(0);
 			
 		}
 		
 		return null;
 		
 	}
+	
+	public static HumanNPC getNPCByEntity(Entity entity)
+	{
+
+		for (NPC npc : AntiRelog.npcHandler.getNPCs())
+		{
+			
+			if (((HumanNPC) npc).getBukkitEntity().getEntityId() == entity.getEntityId())
+			{
+				
+				return (HumanNPC) npc;
+				
+			}
+			
+		}
 		
+		return null;
+
+	}
+	
+	public static void removeNPC(String name)
+	{
+		
+		if (containsNPC(name))
+		{
+			
+			NPC npc = getNPCByName(name);
+			
+			if (npc.isAggressive())
+			{
+
+				Bukkit.getScheduler().cancelTask(npc.getId());
+				
+				AntiRelog.npcHandler.despawnHumanByName(name);
+			
+			}
+				
+		}
+		
+	}
+	
+	public static boolean isNPC(Entity entity)
+	{
+		
+		for (NPC npc : AntiRelog.npcHandler.getNPCs())
+		{
+			
+			if (((HumanNPC) npc).getBukkitEntity().getEntityId() == entity.getEntityId())
+			{
+				
+				return true;
+				
+			}
+			
+		}
+		
+		return false;
+		
+	}
+	
 	public static void addInCombat(Player player, Long time)
 	{
 		

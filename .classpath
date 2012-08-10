@@ -2,9 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="C:/Users/MRT253/Downloads/Citizens.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="lib" path="C:/Users/MRT253/Downloads/bukkit-1.3.1-R1.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/MRT253/Downloads/craftbukkit-1.3.1-R1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/owner/Desktop/Server/1.2 Snowcraft/craftbukkit.jar"/>
+	<classpathentry kind="lib" path="C:/Users/owner/Downloads/bukkit-1.3.1-R0.1-20120803.000353-4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/owner/Desktop/Server/1.2 Snowcraft/pluginsreal/Citizens.jar"/>
+	<classpathentry kind="lib" path="C:/Users/owner/Desktop/Server/1.2 Snowcraft/plugins/Modifyworld.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

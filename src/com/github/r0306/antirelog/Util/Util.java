@@ -1,12 +1,19 @@
 package com.github.r0306.AntiRelog.Util;
 
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 public class Util
@@ -17,6 +24,10 @@ public class Util
 	private static final String name = Plugin.getPlugin().getDescription().getName();
 	
 	private static final String version = Plugin.getPlugin().getDescription().getVersion();
+	
+	private static final String website = Plugin.getPlugin().getDescription().getWebsite();
+	
+	private static String newVersion;
 	
 	public static String getName()
 	{
@@ -29,6 +40,27 @@ public class Util
 	{
 		
 		return version;
+		
+	}
+	
+	public static String getWebsite()
+	{
+		
+		return website;
+		
+	}
+	
+	public static String getDownload()
+	{
+		
+		return website.replaceAll("files.rss", "");
+		
+	}
+	
+	public static String getNewVersion()
+	{
+		
+		return newVersion;
 		
 	}
 	
@@ -55,6 +87,13 @@ public class Util
 	        
 	}
 	
+	public static String replacePlayerName(String string, Player player)
+	{
+		
+		return string.replaceAll("<player>", player.getName());
+		
+	}
+	
 	public static boolean canBypass(Player player)
 	{
 		
@@ -66,6 +105,13 @@ public class Util
 	{
 		
 		return sender.hasPermission("antirelog.unban");
+		
+	}
+	
+	public static boolean aggroNPC(Player player)
+	{
+		
+		return player.hasPermission("antirelog.aggressivenpc");
 		
 	}
 	
@@ -85,5 +131,55 @@ public class Util
 							 EntityType.SHEEP, EntityType.SNOWMAN, EntityType.SQUID, EntityType.VILLAGER);
 		
 	}
+	
+    public static boolean updateAvaliable() throws Exception
+    {
+
+		URL url = new URL(getWebsite());
+		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(url.openConnection().getInputStream());
+		doc.getDocumentElement().normalize();
+		
+		NodeList nodes = doc.getElementsByTagName("item");
+		Node firstNode = nodes.item(0);
+
+		if (firstNode.getNodeType() == 1)
+		{
 			
+			Element firstElement = (Element) firstNode;
+			NodeList firstElementTagName = firstElement.getElementsByTagName("title");
+			
+			Element firstNameElement = (Element) firstElementTagName.item(0);
+			NodeList firstNodes = firstNameElement.getChildNodes();
+			
+			newVersion = firstNodes.item(0).getNodeValue().replace("Anti-Relog v", "");
+			
+			String tempVersion = newVersion.replace(".", "").trim();
+			
+			if (Integer.parseInt(versionCorrect(tempVersion)) > Integer.parseInt(getVersion().replace(".", "").trim()))
+			{
+				
+				return true;
+				
+			}
+
+		}
+    		
+		return false;
+
+    }
+    
+    public static String versionCorrect(String version)
+    {
+
+    	if (version.length() < 3)
+    	{
+    		
+    		version += "0";
+    		
+    	}
+    	
+    	return version;
+    	 	
+    }
+    
 }

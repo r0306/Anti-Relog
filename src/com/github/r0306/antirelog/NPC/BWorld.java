@@ -24,7 +24,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * @author martin
  */
-public class BWorld {
+public class BWorld
+{
 
 	private BServer server;
 	private World world;
@@ -32,58 +33,99 @@ public class BWorld {
 	private WorldServer wServer;
 	private WorldProvider wProvider;
 
-	public BWorld(BServer server, String worldName) {
+	public BWorld(BServer server, String worldName)
+	{
+	
 		this.server = server;
 		world = server.getServer().getWorld(worldName);
-		try {
+		
+		try
+		{
+			
 			cWorld = (CraftWorld) world;
 			wServer = cWorld.getHandle();
 			wProvider = wServer.worldProvider;
+		
 		} catch (Exception ex) {
+		
 			Logger.getLogger("Minecraft").log(Level.SEVERE, null, ex);
+		
 		}
+	
 	}
 
-	public BWorld(World world) {
+	public BWorld(World world)
+	{
+		
 		this.world = world;
-		try {
+		
+		try 
+		{
+			
 			cWorld = (CraftWorld) world;
 			wServer = cWorld.getHandle();
 			wProvider = wServer.worldProvider;
+		
 		} catch (Exception ex) {
+		
 			Logger.getLogger("Minecraft").log(Level.SEVERE, null, ex);
+		
 		}
+	
 	}
 
-	public PlayerManager getPlayerManager() {
+	public PlayerManager getPlayerManager()
+	{
+		
 		return wServer.getPlayerManager();
+
 	}
 
-	public CraftWorld getCraftWorld() {
+	public CraftWorld getCraftWorld()
+	{
+	
 		return cWorld;
+	
 	}
 
-	public WorldServer getWorldServer() {
+	public WorldServer getWorldServer() 
+	{
+	
 		return wServer;
+	
 	}
 
-	public WorldProvider getWorldProvider() {
+	public WorldProvider getWorldProvider()
+	{
+	
 		return wProvider;
+	
 	}
 
-	public boolean createExplosion(double x, double y, double z, float power) {
+	public boolean createExplosion(double x, double y, double z, float power) 
+	{
+	
 		return wServer.explode(null, x, y, z, power).wasCanceled ? false : true;
+	
 	}
 
-	public boolean createExplosion(Location l, float power) {
+	public boolean createExplosion(Location l, float power)
+	{
+		
 		return wServer.explode(null, l.getX(), l.getY(), l.getZ(), power).wasCanceled ? false : true;
+	
 	}
 
 	@SuppressWarnings("unchecked")
-	public void removeEntity(String name, final Player player, JavaPlugin plugin) {
+	public void removeEntity(String name, final Player player, JavaPlugin plugin)
+	{
+	
 		server.getServer().getScheduler().callSyncMethod(plugin, new Callable<Object>() {
+			
 			@Override
-			public Object call() throws Exception {
+			public Object call() throws Exception 
+			{
+				
 				Location loc = player.getLocation();
 				CraftWorld craftWorld = (CraftWorld) player.getWorld();
 				CraftPlayer craftPlayer = (CraftPlayer) player;
@@ -96,14 +138,25 @@ public class BWorld {
 				List<Entity> entities = new ArrayList<Entity>();
 				AxisAlignedBB bb = AxisAlignedBB.a(x - radius, y - radius, z - radius, x + radius, y + radius, z + radius);
 				entities = craftWorld.getHandle().getEntities(craftPlayer.getHandle(), bb);
-				for (Entity o : entities) {
-					if (!(o instanceof EntityPlayer)) {
+				
+				for (Entity o : entities)
+				{
+					
+					if (!(o instanceof EntityPlayer))
+					{
+					
 						o.getBukkitEntity().remove();
+					
 					}
+				
 				}
+				
 				return null;
+			
 			}
+		
 		});
+	
 	}
 
 }

@@ -1,29 +1,17 @@
 name: AntiRelog
 main: com.github.r0306.AntiRelog.AntiRelog
 version: 2.0.0
+website: http://dev.bukkit.org/server-mods/anti-relog/files.rss
+softdepend: [Modifyworld]
 commands:
-  ar:
-    description: Shows plugin information.
-    usage: /<command>
-    aliases: [a, arl]
   antirelog:
     description: Shows plugin information.
     usage: /<command>
-  ar t:
-    description: Shows plugin information.
-    usage: /<command>
-  antirelog t:
-    description: Displays combat time left.
-    usage: /<command>
-  ar time:
-    description: Displays combat time left.
-    usage: /<command>
+    aliases: [a, ar, arl]
   antirelog time:
     description: Displays combat time left.
     usage: /<command>
-  ar unban:
-    description: Unbans the selected player when they combat log.
-    usage: /<command>
+    aliases: [antirelog t]
   antirelog unban:
     description: Unbans the selected player when they combat log.
     usage: /<command>
@@ -32,9 +20,14 @@ permissions:
         description: Gives access to all PVP bypasses and AntiRelog commands.
         children:
             antirelog.pvpbypass: true
+            antirelog.unban: true
+            antirelog.aggressivenpc: true
     antirelog.pvpbypass:
         description: Players who have this node can bypass all PVP battles and penalties.
         default: op
     antirelog.unban:
         description: Grants the ability to unban players who were originally banned through pvp logging.
+        default: op
+    antirelog.aggressivenpc:
+        description: Players who have this node spawn an aggressive NPC to fight for them when they log out.
         default: op

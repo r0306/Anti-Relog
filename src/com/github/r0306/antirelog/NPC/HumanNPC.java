@@ -11,58 +11,100 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-public class HumanNPC extends NPC {
+public class HumanNPC extends NPC
+{
 
-	public HumanNPC(NPCEntity npcEntity) {
+	public HumanNPC(NPCEntity npcEntity)
+	{
+		
 		super(npcEntity);
+	
 	}
 
-	public void animateArmSwing() {
+	public void animateArmSwing()
+	{
+	
 		((WorldServer) getEntity().world).tracker.a(getEntity(), new Packet18ArmAnimation(getEntity(), 1));
+
 	}
 
-	public void actAsHurt() {
+	public void actAsHurt() 
+	{
+		
 		((WorldServer) getEntity().world).tracker.a(getEntity(), new Packet18ArmAnimation(getEntity(), 2));
+	
 	}
 
-	public void setItemInHand(Material m) {
+	public void setItemInHand(Material m) 
+	{
+	
 		setItemInHand(m, (short) 0);
+	
 	}
 
-	public void setItemInHand(Material m, short damage) {
+	public void setItemInHand(Material m, short damage) 
+	{
+
 		((HumanEntity) getEntity().getBukkitEntity()).setItemInHand(new ItemStack(m, 1, damage));
+	
 	}
 
-	public void setName(String name) {
+	public void setName(String name)
+	{
+	
 		((NPCEntity) getEntity()).name = name;
+	
 	}
 
-	public String getName() {
+	public String getName()
+	{
+	
 		return ((NPCEntity) getEntity()).name;
+	
 	}
 
-	public PlayerInventory getInventory() {
+	public PlayerInventory getInventory()
+	{
+	
 		return ((HumanEntity) getEntity().getBukkitEntity()).getInventory();
+	
 	}
 
-	public void putInBed(Location bed) {
+	public void putInBed(Location bed)
+	{
+		
 		getEntity().setPosition(bed.getX(), bed.getY(), bed.getZ());
 		getEntity().a((int) bed.getX(), (int) bed.getY(), (int) bed.getZ());
+	
+	
 	}
 
-	public void getOutOfBed() {
+	public void getOutOfBed() 
+	{
+	
 		((NPCEntity) getEntity()).a(true, true, true);
+	
 	}
 
-	public void setSneaking() {
+	public void setSneaking()
+	{
+		
 		getEntity().setSneaking(true);
+	
 	}
 
-	public void lookAtPoint(Location point) {
-		if (getEntity().getBukkitEntity().getWorld() != point.getWorld()) {
+	public void lookAtPoint(Location point)
+	{
+	
+		if (getEntity().getBukkitEntity().getWorld() != point.getWorld()) 
+		{
+		
 			return;
+		
 		}
+		
 		Location npcLoc = ((LivingEntity) getEntity().getBukkitEntity()).getEyeLocation();
+		
 		double xDiff = point.getX() - npcLoc.getX();
 		double yDiff = point.getY() - npcLoc.getY();
 		double zDiff = point.getZ() - npcLoc.getZ();
@@ -70,12 +112,19 @@ public class HumanNPC extends NPC {
 		double DistanceY = Math.sqrt(DistanceXZ * DistanceXZ + yDiff * yDiff);
 		double newYaw = Math.acos(xDiff / DistanceXZ) * 180 / Math.PI;
 		double newPitch = Math.acos(yDiff / DistanceY) * 180 / Math.PI - 90;
-		if (zDiff < 0.0) {
+		
+		if (zDiff < 0.0)
+		{
+
 			newYaw = newYaw + Math.abs(180 - newYaw) * 2;
+	
 		}
+		
 		getEntity().yaw = (float) (newYaw - 90);
 		getEntity().pitch = (float) newPitch;
+		
 		((EntityPlayer)getEntity()).as = (float)(newYaw - 90);
+	
 	}
 
 }

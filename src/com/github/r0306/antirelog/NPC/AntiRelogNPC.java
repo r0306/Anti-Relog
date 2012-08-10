@@ -2,46 +2,63 @@ package com.github.r0306.AntiRelog.NPC;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
 
 import com.github.r0306.AntiRelog.AntiRelog;
 import com.github.r0306.AntiRelog.Storage.DataBase;
-import com.github.r0306.AntiRelog.Util.Configuration;
 import com.github.r0306.AntiRelog.Util.Plugin;
 
 public class AntiRelogNPC
 {
 	
-	public static void spawnNPC(Player player)
+	public static void spawnNPC(Player player, boolean aggro)
 	{
+
+		NPC npc = AntiRelog.npcHandler.spawnHumanNPC(player.getName(), player.getLocation());
 		
-		HumanNPC humanNPC = (HumanNPC) AntiRelog.npcHandler.spawnHumanNPC(player.getName(), player.getLocation());
+		HumanNPC humanNPC = (HumanNPC) npc;
 
 		humanNPC.getInventory().setContents(player.getInventory().getContents());		
 		
 		humanNPC.getInventory().setArmorContents(player.getInventory().getArmorContents());
 		
-		DataBase.registerNPC(humanNPC);
+		humanNPC.setExp(player.getTotalExperience());
 		
-		setTarget(humanNPC, DataBase.getLastDamager(player));
+		((LivingEntity)humanNPC.getBukkitEntity()).setNoDamageTicks(1);
+				
+		((LivingEntity)humanNPC.getBukkitEntity()).setHealth(player.getHealth());
 		
+		((LivingEntity)humanNPC.getBukkitEntity()).addPotionEffects(player.getActivePotionEffects());
+		
+		if (aggro)
+		{
+
+			Entity target = DataBase.getLastDamager(player);
+			
+			setTarget(humanNPC, target);
+			
+			humanNPC.setAggressive(true);
+			
+			humanNPC.setTarget(target);
+						
+		}
+								
 	}
 	
 	public static void setTarget(final HumanNPC npc, final Entity target)
 	{
-			
-		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Plugin.getPlugin(), new Runnable()
+
+		int id = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Plugin.getPlugin(), new Runnable()
 		{
 
 			int counter = 0;
@@ -49,53 +66,71 @@ public class AntiRelogNPC
 			@Override
         	public void run()
 			{
-										
+
 				double distance = distance(npc, target);
 				
 				LivingEntity bukkitNPC = (LivingEntity) npc.getBukkitEntity();
-								
-				if (distance > 4 && distance < 30)
-				{
-						
-					if (npc.getInventory().contains(Material.BOW) && npc.getInventory().contains(Material.ARROW) && counter % 40 == 0)
-					{
-								
-						switchToHand(npc, Material.BOW);
-
-						bukkitNPC.launchProjectile(Arrow.class);
-						
-						removeItem(npc, Material.ARROW, 1);
-						
-					}
-						
-				}
 				
-				else if (distance <= 4)
+				npc.lookAtPoint(((LivingEntity)target).getEyeLocation());
+				
+				if (!bukkitNPC.isDead() && !target.isDead())
 				{
-					
-					if (counter % 30 == 0)
+				
+					if (distance > 4 && distance < 30 && npc.getInventory().contains(Material.BOW) && npc.getInventory().contains(Material.ARROW))
 					{
-					
-						if (bukkitNPC.getLocation().distance(target.getLocation()) < 3)
+	
+						if (counter % 40 == 0)
 						{
+							
+							switchToHand(npc, Material.BOW);
+	
+							bukkitNPC.launchProjectile(Arrow.class);
+							
+							removeItem(npc, Material.ARROW, 1);
 						
+						}	
+							
+					}
+					
+					else if (distance <= 4)
+					{
+						
+						if (counter % 30 == 0)
+						{
+							
 							npc.walkTo(getApproximateTargetLocation(target));
 							
-							npc.animateArmSwing();
-					
-							((LivingEntity)target).damage((int) calculateDamage(npc, target), target);
+							npc.lookAtPoint(((LivingEntity)target).getEyeLocation());
 							
-							target.setVelocity(bukkitNPC.getLocation().getDirection().normalize().multiply(2));
+							getOptimalWeapon(npc);
+							
+							npc.animateArmSwing();
+
+							((LivingEntity)target).damage((int) calculateDamage(npc, target, null), (LivingEntity)npc.getBukkitEntity());
+							
+
 							
 						}
 						
 					}
+					else
+					{
+						
+						if (counter % 10 == 0)
+						{
+						
+							npc.walkTo(getApproximateTargetLocation(target));
+						
+						}
+							
+					}
 					
 				}
+				
 				else
 				{
 					
-					npc.walkTo(target.getLocation());
+					DataBase.removeNPC(npc.getName());
 					
 				}
 			
@@ -104,6 +139,8 @@ public class AntiRelogNPC
 			}
         	
 		}, 1L, 1L);
+		
+		npc.setId(id);
 		
 	}
 	
@@ -170,8 +207,6 @@ public class AntiRelogNPC
 	public static void getOptimalWeapon(HumanNPC npc)
 	{
 		
-		ItemStack item = null;
-		
 		for (Material material : getWeapons())
 		{
 			
@@ -215,10 +250,10 @@ public class AntiRelogNPC
 		
 	}
 		
-	public static double calculateDamage(HumanNPC npc, Entity target)
+	public static double calculateDamage(HumanNPC npc, Entity target, Entity attacker)
 	{
 		
-		double damage = 0;
+		double damage = 3;
 		double defense = 0;
 		
 		if (target instanceof Player)
@@ -298,25 +333,63 @@ public class AntiRelogNPC
 				
 			}
 			
-			if (npc.getInventory().getItemInHand() != null)
+			if (npc != null)
 			{
-				
-				String s = player.getInventory().getItemInHand().getType().name().split("_")[0];
-												
-				if (s.equalsIgnoreCase("WOODEN")) damage = 3;
-				else if (s.equalsIgnoreCase("STONE")) damage = 5;
-				else if (s.equalsIgnoreCase("IRON")) damage = 6;
-				else if (s.equalsIgnoreCase("GOLD")) damage = 7.5;
-				else if (s.equalsIgnoreCase("DIAMOND")) damage = 8.5;
-				else damage = 2;
-								
-				if (npc.getInventory().getItemInHand().getType().name().contains("SWORD"))
+			
+				if (npc.getInventory().getItemInHand() != null)
 				{
 					
-					damage += 1;
+					String s = player.getInventory().getItemInHand().getType().name();
+													
+					if (s.contains("WOODEN")) damage = 1;
+					else if (s.contains("STONE")) damage = 2;
+					else if (s.contains("IRON")) damage = 3;
+					else if (s.contains("GOLD")) damage = 4.5;
+					else if (s.contains("DIAMOND")) damage = 5.5;
+									
+					if (npc.getInventory().getItemInHand().getType().name().contains("SWORD"))
+					{
+						
+						damage += 2;
+						
+					}
+				
+				}
+				
+			}
+			
+			else if (attacker instanceof Projectile)
+			{
+				
+				damage = 5;
+				
+			}
+			
+			else
+			{
+				
+				HumanEntity damager = (HumanEntity) attacker;
+				
+				if (damager.getInventory().getItemInHand() != null)
+				{
+					
+					String s = damager.getInventory().getItemInHand().getType().name();
+					
+					if (s.contains("WOODEN")) damage = 1;
+					else if (s.contains("STONE")) damage = 2;
+					else if (s.contains("IRON")) damage = 3;
+					else if (s.contains("GOLD")) damage = 4.5;
+					else if (s.contains("DIAMOND")) damage = 5.5;
+					
+					if (damager.getInventory().getItemInHand().getType().name().contains("SWORD"))
+					{
+						
+						damage += 2;
+						
+					}
 					
 				}
-			
+				
 			}
 			
 		}
@@ -337,11 +410,9 @@ public class AntiRelogNPC
 	public static Location getApproximateTargetLocation(Entity target)
 	{
 		
-		Location location = target.getLocation();
+		BlockFace face = getTargetFacing(target);
 		
-		Random random = new Random();
-		
-		return location.add(random.nextDouble() * 3 - 1.5, 0, random.nextDouble() * 3 - 1.5);
+		return target.getLocation().getBlock().getRelative(face, 2).getLocation();
 		
 	}
 	
@@ -373,5 +444,5 @@ public class AntiRelogNPC
          return BlockFace.WEST;
 		
 	}
-		
+	
 }

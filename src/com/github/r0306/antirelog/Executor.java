@@ -8,7 +8,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.github.r0306.AntiRelog.NPC.AntiRelogNPC;
 import com.github.r0306.AntiRelog.Storage.DataBase;
 import com.github.r0306.AntiRelog.Util.Clock;
 import com.github.r0306.AntiRelog.Util.Colors;
@@ -35,7 +34,7 @@ public class Executor implements CommandExecutor, Colors
 			
 			if (args.length == 0)
 			{
-				AntiRelogNPC.spawnNPC(player);
+
 				displayIntro(sender);
 				
 			}

@@ -22,4 +22,11 @@ public class Plugin
 		
 	}
 	
+	public static void shutDown()
+	{
+		
+		plugin = null;
+		
+	}
+	
 }

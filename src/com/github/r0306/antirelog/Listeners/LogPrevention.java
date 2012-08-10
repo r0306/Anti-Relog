@@ -1,10 +1,13 @@
 package com.github.r0306.AntiRelog.Listeners;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.ExperienceOrb;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,10 +16,12 @@ import org.bukkit.inventory.ItemStack;
 
 import com.github.r0306.AntiRelog.AntiRelog;
 import com.github.r0306.AntiRelog.NPC.AntiRelogNPC;
+import com.github.r0306.AntiRelog.NPC.HumanNPC;
 import com.github.r0306.AntiRelog.Storage.DataBase;
 import com.github.r0306.AntiRelog.Util.Clock;
 import com.github.r0306.AntiRelog.Util.Colors;
 import com.github.r0306.AntiRelog.Util.Configuration;
+import com.github.r0306.AntiRelog.Util.Util;
 
 public class LogPrevention implements Listener, Colors
 {
@@ -28,26 +33,28 @@ public class LogPrevention implements Listener, Colors
 	{
 		
 		Player player = event.getPlayer();
-		AntiRelogNPC.spawnNPC(player);
 		
 		if (DataBase.isInCombat(player))
 		{
-		
+
 			long end = DataBase.getEndingTime(player);
+			Set<Integer> items = new HashSet<Integer>();
 			
 			if (!Clock.isEnded(end))
 			{
 
 				if (isPvPLog())
 				{
-					
+
 					if (Configuration.npcEnabled())
 					{
-						
+
 						if (DataBase.containsLastDamager(player))
 						{
+
+							AntiRelogNPC.spawnNPC(player, Configuration.npcAggressive() || Util.aggroNPC(player) ? true : false);
 							
-							AntiRelogNPC.spawnNPC(player);
+							Clock.scheduleDelayedDespawn(player);
 							
 						}
 						
@@ -60,6 +67,7 @@ public class LogPrevention implements Listener, Colors
 						{
 							
 							dropItems(player);
+							items.add(0);
 							
 						}
 						
@@ -67,6 +75,7 @@ public class LogPrevention implements Listener, Colors
 						{
 							
 							dropArmor(player);
+							items.add(1);
 							
 						}
 						
@@ -74,18 +83,21 @@ public class LogPrevention implements Listener, Colors
 						{
 							
 							dropExp(player);
+							items.add(2);
 							
 						}
+												
+					}
+					
+					if (Configuration.broadcastEnabled())
+					{
 						
-						if (Configuration.broadcastEnabled())
-						{
-							
-							Bukkit.broadcastMessage(name + green + player.getName() + " has logged off during combat.");
-							Bukkit.broadcastMessage(Configuration.getBroadcastMessage().replaceAll("<player>", player.getName()));
-							
-						}
+						Bukkit.broadcastMessage(name + green + player.getName() + " has logged off during combat.");
+						Bukkit.broadcastMessage(Configuration.getBroadcastMessage().replaceAll("<player>", player.getName()));
 						
 					}
+					
+					DataBase.addToLoginQueue(player.getName(), items);
 					
 					DataBase.banPlayer(player);
 					
@@ -101,7 +113,7 @@ public class LogPrevention implements Listener, Colors
 			
 	}
 	
-	public void dropItems(Player player)
+	public static void dropItems(HumanEntity player)
 	{
 		
         for (ItemStack i : player.getInventory().getContents())
@@ -119,7 +131,7 @@ public class LogPrevention implements Listener, Colors
 		
 	}
 	
-	public void dropArmor(Player player)
+	public static void dropArmor(HumanEntity player)
 	{
 		
         for (ItemStack armor : player.getInventory().getArmorContents())
@@ -138,7 +150,7 @@ public class LogPrevention implements Listener, Colors
 		
 	}
 	
-	public void dropExp(Player player)
+	public static void dropExp(Player player)
 	{
 		
    		float Exp = player.getExp();
@@ -161,6 +173,22 @@ public class LogPrevention implements Listener, Colors
    		player.setLevel( 0 );
    	    
    		player.setExp( 0 );
+   		
+	}
+	
+	public static void dropExp(HumanNPC npc)
+	{
+		   		
+   		int ExpTotal = (int) (npc.getExp() / 5);
+   		
+   		World world = npc.getBukkitEntity().getLocation().getWorld();
+   		
+   		for (int i = 0; i < 6; i ++)
+   		{
+   	    
+   			((ExperienceOrb)world.spawn(npc.getBukkitEntity().getLocation(), ExperienceOrb.class)).setExperience( ExpTotal );
+		
+   		}
    		
 	}
 	

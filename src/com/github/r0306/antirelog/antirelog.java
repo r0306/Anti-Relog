@@ -1,7 +1,9 @@
 package com.github.r0306.AntiRelog;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.FileConfigurationOptions;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -11,18 +13,22 @@ import com.github.r0306.AntiRelog.Listeners.DeathListener;
 import com.github.r0306.AntiRelog.Listeners.FreezeCommand;
 import com.github.r0306.AntiRelog.Listeners.LogPrevention;
 import com.github.r0306.AntiRelog.Listeners.LoginListener;
+import com.github.r0306.AntiRelog.Listeners.ModifyworldFix;
+import com.github.r0306.AntiRelog.Listeners.NPCListener;
 import com.github.r0306.AntiRelog.Loggers.LogHandler;
 import com.github.r0306.AntiRelog.Loggers.PVPLogger;
 import com.github.r0306.AntiRelog.NPC.NPCManager;
 import com.github.r0306.AntiRelog.Storage.DataBase;
+import com.github.r0306.AntiRelog.Util.Colors;
 import com.github.r0306.AntiRelog.Util.Plugin;
 import com.github.r0306.AntiRelog.Util.Util;
 
-public class AntiRelog extends JavaPlugin
+public class AntiRelog extends JavaPlugin implements Colors
 {
 
 	public static PVPLogger logger;
 	public static NPCManager npcHandler;
+	public static org.bukkit.plugin.Plugin modifyWorld;
 	
 	public void onEnable()
 	{
@@ -31,6 +37,8 @@ public class AntiRelog extends JavaPlugin
 		
 		new LogHandler();
 		
+		loadConfiguration();
+			
 		try
 		{
 		
@@ -42,14 +50,40 @@ public class AntiRelog extends JavaPlugin
 
 		}
 		
+		try
+		{
+		
+			DataBase.loadQueue();
+		
+		} catch (FileNotFoundException e) {
+
+			e.printStackTrace();
+		
+		} catch (ClassNotFoundException e) {
+
+			e.printStackTrace();
+		
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		
+		}
+		
 		npcHandler = new NPCManager(this);
+		
+		if (getServer().getPluginManager().getPlugin("Modifyworld") != null)
+		{
+			
+			modifyWorld = getServer().getPluginManager().getPlugin("Modifyworld");
+			
+		}
 		
 		registerExecutors();
 		
 		registerListeners();
 		
-		loadConfiguration();
-
+		scheduleRepeatingUpdateCheck();
+		
 		System.out.println("AntiRelog version [" + getDescription().getVersion() + "] loaded");
 		
 	}
@@ -66,6 +100,17 @@ public class AntiRelog extends JavaPlugin
 
 			e.printStackTrace();
 
+		}
+		
+		try 
+		{
+		
+			DataBase.saveQueue();
+		
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		
 		}
 		
 		System.out.println("AntiRelog version [" + getDescription().getVersion() + "] unloaded");
@@ -89,6 +134,48 @@ public class AntiRelog extends JavaPlugin
 		getServer().getPluginManager().registerEvents(new LoginListener(), this);
 		getServer().getPluginManager().registerEvents(new LogPrevention(), this);
 		getServer().getPluginManager().registerEvents(new FreezeCommand(), this);
+		getServer().getPluginManager().registerEvents(new NPCListener(), this);
+		
+		if (modifyWorld != null)
+		{
+			
+			getServer().getPluginManager().registerEvents(new ModifyworldFix(), this);
+			
+		}
+		
+	}
+	
+	public void scheduleRepeatingUpdateCheck()
+	{
+		
+		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable()
+		{
+
+			@Override
+        	public void run()
+			{
+        	
+				try
+				{
+				
+					if (Util.updateAvaliable())
+					{
+						
+						Bukkit.getConsoleSender().sendMessage(aqua + "[AntiRelog] An update is available!");
+						
+						Bukkit.getConsoleSender().sendMessage(aqua + "Go to " + yellow + Util.getDownload() + aqua + " to update your plugin to version " + Util.getNewVersion() + "!");
+						
+					}
+				
+				} catch (Exception e) {
+
+					e.printStackTrace();
+
+				}
+					
+			}
+        	
+		}, 0L, 360000L);
 		
 	}
 	
@@ -102,9 +189,19 @@ public class AntiRelog extends JavaPlugin
 			
 		}
 		
+		DataBase.clearAll();
+		
+		logger = null;
+		
+		npcHandler = null;
+		
+		modifyWorld = null;
+		
+		Plugin.shutDown();
+		
 	}
 			
-	private void loadConfiguration()
+	public void loadConfiguration()
 	{
 		
 		FileConfiguration cfg = this.getConfig();
@@ -128,8 +225,11 @@ public class AntiRelog extends JavaPlugin
 
 		cfg.addDefault("PvP.Unban.Message-Enabled", true);
 		cfg.addDefault("PvP.Unban.Message", "<darkaqua>You logged off during PVP and as a result you have lost your items.");
+		cfg.addDefault("PvP.Unban.Run-Commands", Arrays.asList("say <player> has logged on after being banned (edit the config to change this default runnable command)."));
 		
-		cfg.addDefault("PvP.CombatLog.NPC", false);
+		cfg.addDefault("PvP.CombatLog.NPC.Enabled", false);
+		cfg.addDefault("PvP.CombatLog.NPC.Despawn-Delay", 120);
+		cfg.addDefault("PvP.CombatLog.NPC.Default-Aggressive", false);
 					
 		cfg.addDefault("PvP.CombatLog.Drop.Items", true);
 		cfg.addDefault("PvP.CombatLog.Drop.Armor", true);
@@ -172,8 +272,11 @@ public class AntiRelog extends JavaPlugin
 			   "Ban Broadcast: Set this to true to alert all players on the server when someone combat logs." + newLine +
 			   "Ban Broadcast Message: This message will be displayed to everyone on the server when a player logs off while in combat." + newLine + newLine +
 			   "Unban Message Enabled: Set this to true to send a message to players when they log on after being unbanned." + newLine +
-			   "Unban Message: This is the message that will be sent to players when they log on after being unbanned." + newLine + newLine +
+			   "Unban Message: This is the message that will be sent to players when they log on after being unbanned." + newLine +
+			   "Unban Runnbale Commands: Now, you can run multiple commands when a previously banned player logs on. You can use this along with economy plugins to penalize combat loggers." + newLine + newLine +
 			   "NPC: Setting this to true spawns an NPC in place of the combat logger. The NPC will fight back and drop the items if killed. If the NPC kills the attacker, it will despawn." + newLine +
+			   "NPC Despawn Delay: Defines the number of seconds before the NPC is despawned." + newLine +
+			   "NPC Default Aggressive: Set this to true to make all spawned NPCs defend themselves and attack the enemy. If set to false, individual permission nodes can be assigned giving the 'antirelog.aggressivenpc' node." + newLine + newLine +
 			   "Drops: If these are set to true, the player will drop that equipment/item upon combat logging. If NPCs are enabled, the NPC will drop those items upon being killed." + newLine + newLine +
 			   "Disallow All: Set this to true to disallow all commands while in PVP. (Overrides command list)." + newLine +
 			   "Freeze Duration: This defines the amount of time in SECONDS that players must wait before using commands if they are hit. Set to 0 if you want to disable this feature." + newLine + 

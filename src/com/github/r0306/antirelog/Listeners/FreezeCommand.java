@@ -48,10 +48,10 @@ public class FreezeCommand implements Listener, Colors
 					
 					for (String s : Configuration.getDisallowedCommands())
 					{
-						System.out.println(s);
+
 						if (("/" + s).equalsIgnoreCase(command))
 						{
-							System.out.println("hi");
+
 							cancelEvent(event);
 							break;
 							

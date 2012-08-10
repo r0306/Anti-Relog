@@ -23,7 +23,7 @@ public class Clock
 	public static long getEnd()
 	{
 		
-		return getTime() + Configuration.getFreezeDuration();
+		return getTime() + Configuration.getFreezeDuration() / 20;
 		
 	}
 	
@@ -130,6 +130,24 @@ public class Clock
 			}
         	
 		}, Configuration.getFreezeDuration());
+		
+	}
+	
+	public static void scheduleDelayedDespawn(final Player player)
+	{
+		
+		Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(Plugin.getPlugin(), new Runnable()
+		{
+
+			@Override
+        	public void run()
+			{
+				
+				DataBase.removeNPC(player.getName());
+		
+			}
+        	
+		}, Configuration.getDespawnTime());
 		
 	}
 	

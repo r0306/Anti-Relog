@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Calendar;
 
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 public class PVPLogger
 {
