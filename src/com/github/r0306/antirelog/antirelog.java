@@ -91,17 +91,6 @@ public class AntiRelog extends JavaPlugin implements Colors
 	public void onDisable()
 	{
 		
-		try
-		{
-		
-			shutdownSequence();
-		
-		} catch (IOException e) {
-
-			e.printStackTrace();
-
-		}
-		
 		try 
 		{
 		
@@ -113,6 +102,17 @@ public class AntiRelog extends JavaPlugin implements Colors
 		
 		}
 		
+		try
+		{
+		
+			shutdownSequence();
+		
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+			
 		System.out.println("AntiRelog version [" + getDescription().getVersion() + "] unloaded");
 		
 	}
@@ -259,7 +259,7 @@ public class AntiRelog extends JavaPlugin implements Colors
 		
 		return "This is the AntiRelog configuration file." + newLine + 
 			   "Editing this file with Notepad++ is strongly recommended." + newLine +  
-			   "Save the file and reload the server after you are done editing for changes to take place." + 
+			   "Save the file and reload the server after you are done editing for changes to take place." + newLine + 
 			   "Here are the explanations for each option:" + newLine + 
 			   "MOTD: This field contains the message that players will see when they join the server. Set enabled to true or false to toggle on or off." + newLine +
 			   "MOTD Message: Displays the message players will see when they join the server." + newLine + newLine +
@@ -273,7 +273,7 @@ public class AntiRelog extends JavaPlugin implements Colors
 			   "Ban Broadcast Message: This message will be displayed to everyone on the server when a player logs off while in combat." + newLine + newLine +
 			   "Unban Message Enabled: Set this to true to send a message to players when they log on after being unbanned." + newLine +
 			   "Unban Message: This is the message that will be sent to players when they log on after being unbanned." + newLine +
-			   "Unban Runnbale Commands: Now, you can run multiple commands when a previously banned player logs on. You can use this along with economy plugins to penalize combat loggers." + newLine + newLine +
+			   "Unban Runnbale Commands: Now, you can run multiple commands when a previously banned player logs on. You can use this along with economy plugins to penalize combat loggers. Set first line of list to 'null' to disable this." + newLine + newLine +
 			   "NPC: Setting this to true spawns an NPC in place of the combat logger. The NPC will fight back and drop the items if killed. If the NPC kills the attacker, it will despawn." + newLine +
 			   "NPC Despawn Delay: Defines the number of seconds before the NPC is despawned." + newLine +
 			   "NPC Default Aggressive: Set this to true to make all spawned NPCs defend themselves and attack the enemy. If set to false, individual permission nodes can be assigned giving the 'antirelog.aggressivenpc' node." + newLine + newLine +
@@ -281,7 +281,7 @@ public class AntiRelog extends JavaPlugin implements Colors
 			   "Disallow All: Set this to true to disallow all commands while in PVP. (Overrides command list)." + newLine +
 			   "Freeze Duration: This defines the amount of time in SECONDS that players must wait before using commands if they are hit. Set to 0 if you want to disable this feature." + newLine + 
 			   "Freeze Message: This sets the message shown if players try to use a command during PVP." + newLine + 
-               "DisallowedCMDs: This is a list of the disallowed commands. Add to the list using the same format as shown. Set to null to allow all commands.";
+               "DisallowedCMDs: This is a list of the disallowed commands. Add to the list using the same format as shown. Set first line to 'null' to allow all commands.";
 		
 	}
 	

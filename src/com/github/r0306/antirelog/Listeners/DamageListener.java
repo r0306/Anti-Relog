@@ -2,7 +2,6 @@ package com.github.r0306.AntiRelog.Listeners;
 
 import net.citizensnpcs.api.CitizensManager;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -64,9 +63,9 @@ public class DamageListener implements Listener, Colors
 	public boolean checkNPC(Entity entity, Entity attacker)
 	{
 		
-		if (Bukkit.getServer().getPluginManager().getPlugin("Citizens") != null)
+		if (Util.citizensEnabled())
 		{
-			
+
 			if (CitizensManager.isNPC(entity) || CitizensManager.isNPC(attacker))
 			{
 				

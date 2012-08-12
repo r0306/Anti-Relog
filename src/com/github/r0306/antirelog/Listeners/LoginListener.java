@@ -64,6 +64,8 @@ public class LoginListener implements Listener, Colors
 							
 						}
 						
+						removePlayerInventory(player);
+						
 						if (!Configuration.runCommandsIsEmpty())
 						{
 							
@@ -76,11 +78,8 @@ public class LoginListener implements Listener, Colors
 							
 						}
 							
-						removePlayerInventory(player);
-						
 						DataBase.removeFromLoginQueue(player);
 							
-					
 					}
 						
 				}

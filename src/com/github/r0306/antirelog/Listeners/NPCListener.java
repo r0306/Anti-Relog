@@ -12,6 +12,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 
 import com.github.r0306.AntiRelog.Storage.DataBase;
+import com.github.r0306.AntiRelog.Util.Configuration;
 
 public class NPCListener implements Listener
 {
@@ -50,29 +51,36 @@ public class NPCListener implements Listener
 			
 			event.getDrops().clear();
 			
-			LogPrevention.dropItems(player);
+			Set<Integer> items = new HashSet<Integer>();
 			
-			LogPrevention.dropArmor(player);
+			if (Configuration.dropItemsEnabled())
+			{
+				
+				LogPrevention.dropItems(player);
+				items.add(0);
+				
+			}
 			
-			LogPrevention.dropExp(DataBase.getNPCByEntity(player));
+			if (Configuration.dropArmorEnabled())
+			{
+				
+				LogPrevention.dropArmor(player);
+				items.add(1);
+				
+			}
 			
-			DataBase.addToLoginQueue(player.getName(), dropAll());	
+			if (Configuration.dropExpEnabled())
+			{
+				
+				LogPrevention.dropExp(DataBase.getNPCByEntity(entity));
+				items.add(2);
+				
+			}
+			
+			DataBase.addToLoginQueue(player.getName(), items);	
 
 		}
 		
 	}
-	
-	public Set<Integer> dropAll()
-	{
-		
-		Set<Integer> items = new HashSet<Integer>();
-		
-		items.add(0);
-		items.add(1);
-		items.add(2);
-		
-		return items;
-		
-	}
-		
+			
 }

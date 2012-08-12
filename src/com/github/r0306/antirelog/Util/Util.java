@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
@@ -112,6 +113,13 @@ public class Util
 	{
 		
 		return player.hasPermission("antirelog.aggressivenpc");
+		
+	}
+	
+	public static boolean citizensEnabled()
+	{
+		
+		return Bukkit.getPluginManager().getPlugin("Citizens") != null && Bukkit.getPluginManager().getPlugin("Citizens").getDescription().getVersion().startsWith("1");
 		
 	}
 	

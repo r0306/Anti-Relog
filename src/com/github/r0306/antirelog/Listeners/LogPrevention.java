@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.HumanEntity;
@@ -116,19 +117,57 @@ public class LogPrevention implements Listener, Colors
 	public static void dropItems(HumanEntity player)
 	{
 		
-        for (ItemStack i : player.getInventory().getContents())
-        {
-         
-        	if (i != null)
-        	{
-            
-        		player.getWorld().dropItemNaturally(player.getLocation(), i);
-        		player.getInventory().remove(i);
-            
-        	}
-        
-        }
+		if (DataBase.isNPC(player))
+		{
+			
+			HumanNPC npc = DataBase.getNPCByEntity(player);
+			
+			for (ItemStack i : npc.getInventory().getContents())
+			{
+			 
+				if (i != null)
+				{
+			    
+					if (i != npc.getInventory().getItemInHand())
+					{
+						
+						npc.getBukkitEntity().getWorld().dropItemNaturally(player.getLocation(), i);
+						npc.getInventory().remove(i);
+			    
+					}
+					
+					else
+					{
+						
+						npc.getBukkitEntity().getWorld().dropItemNaturally(player.getLocation(), npc.getInventory().getItemInHand());
+						npc.getInventory().remove(npc.getInventory().getItemInHand());
+						
+					}
+						
+				}
+			
+			}
+			
+		}
 		
+		else
+		{
+		
+			for (ItemStack i : player.getInventory().getContents())
+			{
+			 
+				if (i != null)
+				{
+			    
+					player.getWorld().dropItemNaturally(player.getLocation(), i);
+					player.getInventory().remove(i);
+			    
+				}
+			
+			}
+			
+		}
+
 	}
 	
 	public static void dropArmor(HumanEntity player)
