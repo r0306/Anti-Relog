@@ -18,8 +18,7 @@ public class FreezeCommand implements Listener, Colors
 	public void freezeCommand(PlayerCommandPreprocessEvent event)
 	{
 		
-		Player player = event.getPlayer();
-		
+		Player player = event.getPlayer();	
 
 		if (DataBase.isInCombat(player))
 		{
@@ -34,7 +33,7 @@ public class FreezeCommand implements Listener, Colors
 			else if (!Clock.isEnded(DataBase.getEndingTime(player)))
 			{
 				
-				if (!Configuration.commandsIsEmpty())
+				if (!Configuration.commandsIsEmpty() && Configuration.commandDisabled())
 				{
 				
 					String command = event.getMessage();
@@ -49,7 +48,7 @@ public class FreezeCommand implements Listener, Colors
 					for (String s : Configuration.getDisallowedCommands())
 					{
 
-						if (("/" + s).equalsIgnoreCase(command))
+						if (("/" + s).toLowerCase().contains(command.toLowerCase()))
 						{
 
 							cancelEvent(event);

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -81,6 +82,36 @@ public class NPCListener implements Listener
 
 		}
 		
+	}
+	
+	
+	@EventHandler
+	public void onEntityDeath(EntityDeathEvent event)
+	{
+		
+		LivingEntity entity = (LivingEntity) event.getEntity();
+		
+		if (DataBase.isNPC(event.getEntity()))
+		{
+			
+			DataBase.removeNPC(DataBase.getNPCByEntity(entity).getName());
+			
+		}
+		
+		 if (entity.getLastDamageCause() instanceof EntityDamageByEntityEvent)
+		 {
+			
+			 EntityDamageByEntityEvent dEvent = (EntityDamageByEntityEvent) entity.getLastDamageCause();
+			
+			 if (DataBase.isNPC(dEvent.getDamager()))
+			 {
+				 
+				 DataBase.removeNPC(DataBase.getNPCByEntity(dEvent.getDamager()).getName());
+				 
+			 }
+			 
+		 }
+	
 	}
 			
 }
