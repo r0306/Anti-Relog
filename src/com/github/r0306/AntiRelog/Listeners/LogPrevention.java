@@ -11,6 +11,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -33,10 +34,10 @@ public class LogPrevention implements Listener, Colors
 	{
 		
 		Player player = event.getPlayer();
-		
+
 		if (DataBase.isInCombat(player))
 		{
-
+			
 			long end = DataBase.getEndingTime(player);
 			Set<Integer> items = new HashSet<Integer>();
 			
@@ -228,6 +229,21 @@ public class LogPrevention implements Listener, Colors
 		
    		}
    		
+	}
+	
+	@EventHandler
+	public void onKick(PlayerKickEvent event)
+	{
+		
+		Player player = event.getPlayer();
+		
+		if (DataBase.isInCombat(player))
+		{
+			
+			DataBase.removeFromCombat(player);
+			
+		}
+		
 	}
 	
 	public static void setDisconnectMessage(String message)

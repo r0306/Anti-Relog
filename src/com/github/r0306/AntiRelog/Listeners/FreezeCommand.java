@@ -32,8 +32,8 @@ public class FreezeCommand implements Listener, Colors
 			
 			else if (!Clock.isEnded(DataBase.getEndingTime(player)))
 			{
-				
-				if (!Configuration.commandsIsEmpty() && Configuration.commandDisabled())
+
+				if (!Configuration.commandsIsEmpty())
 				{
 				
 					String command = event.getMessage();

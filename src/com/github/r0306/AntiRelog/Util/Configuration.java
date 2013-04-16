@@ -52,7 +52,7 @@ public class Configuration implements Colors
 	
 	private static boolean dropExp = config.getBoolean("PvP.CombatLog.Drop.Exp");
 	
-	private static boolean disallowAll = config.getBoolean("PvP.CombatLog.Disallow-All");
+	private static boolean disallowAll = config.getBoolean("PvP.Command.Disallow-All");
 	
 	private static int freezeDuration = config.getInt("PvP.Command.Freeze-Duration");
 	

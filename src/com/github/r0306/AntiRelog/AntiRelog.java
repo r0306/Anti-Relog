@@ -2,7 +2,6 @@ package com.github.r0306.AntiRelog;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.FileConfigurationOptions;
@@ -68,7 +67,7 @@ public class AntiRelog extends JavaPlugin implements Colors
 			e.printStackTrace();
 		
 		}
-		
+				
 		npcHandler = new NPCManager(this);
 		
 		if (getServer().getPluginManager().getPlugin("Modifyworld") != null)
