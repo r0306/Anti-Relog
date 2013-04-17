@@ -12,6 +12,8 @@ public class Configuration implements Colors
 	
 	private static String npcBattleMessage = red + "Your NPC is currently in battle. Please wait until combat ends before logging on.";
 	
+	private static boolean notifyUpdate = config.getBoolean("Update-Notification");
+	
 	private static boolean motdEnabled = config.getBoolean("MOTD.Enabled");
 		
 	private static String motdMessage = Util.colorizeText(config.getString("MOTD.Message"));
@@ -64,6 +66,13 @@ public class Configuration implements Colors
 	{
 		
 		return npcBattleMessage;
+		
+	}
+	
+	public static boolean updateEnabled()
+	{
+		
+		return notifyUpdate;
 		
 	}
 			

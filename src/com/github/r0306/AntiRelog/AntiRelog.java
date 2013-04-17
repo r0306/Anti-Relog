@@ -19,6 +19,7 @@ import com.github.r0306.AntiRelog.Loggers.PVPLogger;
 import com.github.r0306.AntiRelog.NPC.NPCManager;
 import com.github.r0306.AntiRelog.Storage.DataBase;
 import com.github.r0306.AntiRelog.Util.Colors;
+import com.github.r0306.AntiRelog.Util.Configuration;
 import com.github.r0306.AntiRelog.Util.Plugin;
 import com.github.r0306.AntiRelog.Util.Util;
 
@@ -147,6 +148,13 @@ public class AntiRelog extends JavaPlugin implements Colors
 	public void scheduleRepeatingUpdateCheck()
 	{
 		
+		if (!Configuration.updateEnabled())
+		{
+			
+			return;
+			
+		}
+		
 		Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable()
 		{
 
@@ -206,6 +214,8 @@ public class AntiRelog extends JavaPlugin implements Colors
 		FileConfiguration cfg = this.getConfig();
 		FileConfigurationOptions cfgOptions = cfg.options();
 		
+		cfg.addDefault("Update-Notifcation", true);
+		
 		cfg.addDefault("MOTD.Enabled", true);
 		cfg.addDefault("MOTD.Message", "<yellow>Welcome to the server.");
 		
@@ -260,6 +270,7 @@ public class AntiRelog extends JavaPlugin implements Colors
 			   "Editing this file with Notepad++ is strongly recommended." + newLine +  
 			   "Save the file and reload the server after you are done editing for changes to take place." + newLine + 
 			   "Here are the explanations for each option:" + newLine + 
+			   "Update Notification: Setting this to true will notify you when the newest version is available for download." + newLine + 
 			   "MOTD: This field contains the message that players will see when they join the server. Set enabled to true or false to toggle on or off." + newLine +
 			   "MOTD Message: Displays the message players will see when they join the server." + newLine + newLine +
 			   "Mob Logger: Set this to true enable AntiRelog for hostile mobs. Players who log off during combat will face the same consequences as if they logged against another player." + newLine +
