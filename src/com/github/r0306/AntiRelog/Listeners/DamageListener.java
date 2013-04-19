@@ -88,8 +88,13 @@ public class DamageListener implements Listener, Colors
 			if (!DataBase.isInCombat(player))
 			{
 				
-				player.sendMessage(name + Configuration.getTagMessage());
+				if (Configuration.tagMessageEnabled())
+				{
 				
+					player.sendMessage(name + Configuration.getTagMessage());
+				
+				}
+					
 			}
 			
 			long end = Clock.getEnd();
