@@ -43,7 +43,7 @@ public class AntiRelogNPC
 		if (aggro)
 		{
 
-			Entity target = DataBase.getLastDamager(player);
+			Entity target = DataBase.getLastOpponent(player);
 			
 			setTarget(humanNPC, target);
 			
@@ -57,7 +57,7 @@ public class AntiRelogNPC
 	
 	public static void setTarget(final HumanNPC npc, final Entity target)
 	{
-
+		
 		int id = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(Plugin.getPlugin(), new Runnable()
 		{
 
@@ -107,9 +107,7 @@ public class AntiRelogNPC
 							npc.animateArmSwing();
 
 							((LivingEntity)target).damage((int) calculateDamage(npc, target, null), (LivingEntity)npc.getBukkitEntity());
-							
-
-							
+										
 						}
 						
 					}

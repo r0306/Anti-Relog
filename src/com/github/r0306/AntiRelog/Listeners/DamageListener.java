@@ -162,7 +162,7 @@ public class DamageListener implements Listener, Colors
 	public Entity getEntity(Entity entity1, Entity entity2)
 	{
 		
-		return entity1 instanceof Player ? entity1 : entity2;
+		return entity1 instanceof Player ? entity2 : entity1;
 		
 	}
 	
@@ -171,7 +171,7 @@ public class DamageListener implements Listener, Colors
 		
 		if (Configuration.mobLoggerEnabled())
 		{
-						
+
 			if (Util.getHostileMobs().contains(entity.getType()))
 			{
 				

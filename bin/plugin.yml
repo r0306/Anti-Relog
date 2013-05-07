@@ -1,6 +1,6 @@
 name: AntiRelog
 main: com.github.r0306.AntiRelog.AntiRelog
-version: 2.4.0
+version: 2.5.0
 website: http://dev.bukkit.org/server-mods/anti-relog/files.rss
 softdepend: [Modifyworld]
 commands:

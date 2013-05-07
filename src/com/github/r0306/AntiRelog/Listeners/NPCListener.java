@@ -31,7 +31,7 @@ public class NPCListener implements Listener
 			if (event.getDamage() > 0)
 			{
 			
-				entity.setVelocity(attacker.getLocation().getDirection().normalize().multiply(1));
+				entity.setVelocity(attacker.getLocation().getDirection().normalize().multiply(2));
 			
 			}
 				
@@ -77,6 +77,8 @@ public class NPCListener implements Listener
 				items.add(2);
 				
 			}
+			
+			DataBase.removeNPC(player.getName());
 			
 			DataBase.addToLoginQueue(player.getName(), items);	
 

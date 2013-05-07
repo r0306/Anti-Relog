@@ -122,6 +122,30 @@ public class DataBase
 		
 	}
 	
+	public static Entity getLastTarget(Player player)
+	{
+		
+		for (String s : lastDamager.keySet())
+		{
+			
+			if (lastDamager.get(s) instanceof Player)
+			{
+				
+				if (((Player) lastDamager.get(s)).getName().equalsIgnoreCase(player.getName()))
+				{
+					
+					return Bukkit.getPlayer(s);
+					
+				}
+				
+			}
+			
+		}
+		
+		return null;
+		
+	}
+	
 	public static Entity getLastDamager(Player player)
 	{
 		
@@ -133,6 +157,20 @@ public class DataBase
 		}
 		
 		return null;
+		
+	}
+	
+	public static Entity getLastOpponent(Player player)
+	{
+		
+		if (getLastDamager(player) != null)
+		{
+			
+			return getLastDamager(player);
+			
+		}
+		
+		return getLastTarget(player);
 		
 	}
 	

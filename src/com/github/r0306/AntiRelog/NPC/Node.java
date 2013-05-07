@@ -3,11 +3,11 @@ package com.github.r0306.AntiRelog.NPC;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.server.v1_5_R2.AxisAlignedBB;
+import net.minecraft.server.v1_5_R3.AxisAlignedBB;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_5_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_5_R3.CraftWorld;
 
 public class Node
 {
@@ -48,7 +48,7 @@ public class Node
 		if (b.getType() != Material.AIR)
 		{
 		
-			AxisAlignedBB box = net.minecraft.server.v1_5_R2.Block.byId[b.getTypeId()].b(((CraftWorld) b.getWorld()).getHandle(), b.getX(), b.getY(), b.getZ());
+			AxisAlignedBB box = net.minecraft.server.v1_5_R3.Block.byId[b.getTypeId()].b(((CraftWorld) b.getWorld()).getHandle(), b.getX(), b.getY(), b.getZ());
 		
 			if (box != null)
 			{

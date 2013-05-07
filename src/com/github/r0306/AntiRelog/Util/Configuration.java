@@ -62,6 +62,8 @@ public class Configuration implements Colors
 	
 	private static List<String> disallowedCommands = config.getStringList("PvP.Command.Disallowed-List");
 	
+	private static List<String> whiteList = config.getStringList("PvP.Command.WhiteList");
+	
 	public static String getNPCBattleMessage()
 	{
 		
@@ -241,6 +243,20 @@ public class Configuration implements Colors
 	{
 		
 		return disallowedCommands;
+		
+	}
+	
+	public static List<String> getWhiteList()
+	{
+		
+		return whiteList;
+		
+	}
+	
+	public static boolean whiteListIsEmpty()
+	{
+		
+		return Configuration.getWhiteList().size() == 0 ||  Configuration.getDisallowedCommands().get(0) == "null";
 		
 	}
 	

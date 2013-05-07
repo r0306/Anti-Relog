@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.HumanEntity;
@@ -50,13 +51,19 @@ public class LogPrevention implements Listener, Colors
 					if (Configuration.npcEnabled())
 					{
 
-						if (DataBase.containsLastDamager(player))
+						if (DataBase.isInCombat(player) || DataBase.containsLastDamager(player))
 						{
 
-							AntiRelogNPC.spawnNPC(player, Configuration.npcAggressive() || Util.aggroNPC(player) ? true : false);
 							
-							Clock.scheduleDelayedDespawn(player);
+							if (DataBase.getLastOpponent(player) != null)
+							{
 							
+								AntiRelogNPC.spawnNPC(player, Configuration.npcAggressive() || Util.aggroNPC(player) ? true : false);
+							
+								Clock.scheduleDelayedDespawn(player);
+							
+							}
+								
 						}
 						
 					}					
@@ -236,6 +243,13 @@ public class LogPrevention implements Listener, Colors
 	{
 		
 		Player player = event.getPlayer();
+		
+		if ((player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) && player.isFlying())
+		{
+			
+			return;
+			
+		}
 		
 		if (DataBase.isInCombat(player))
 		{

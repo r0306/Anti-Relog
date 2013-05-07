@@ -77,7 +77,7 @@ public class AntiRelog extends JavaPlugin implements Colors
 			modifyWorld = getServer().getPluginManager().getPlugin("Modifyworld");
 			
 		}
-		
+
 		registerExecutors();
 		
 		registerListeners();
@@ -251,6 +251,8 @@ public class AntiRelog extends JavaPlugin implements Colors
 
 		cfg.addDefault("PvP.Command.Disallowed-List", Arrays.asList("tp", "warp", "home", "tpa", "creative"));
 		
+		cfg.addDefault("PvP.Command.WhiteList", Arrays.asList("null"));
+		
 		cfgOptions.copyDefaults(true);
 		
 		cfgOptions.header(getHeader());
@@ -291,7 +293,8 @@ public class AntiRelog extends JavaPlugin implements Colors
 			   "Disallow All: Set this to true to disallow all commands while in PVP. (Overrides command list)." + newLine +
 			   "Freeze Duration: This defines the amount of time in SECONDS that players must wait before using commands if they are hit. Set to 0 if you want to disable this feature." + newLine + 
 			   "Freeze Message: This sets the message shown if players try to use a command during PVP." + newLine + 
-               "DisallowedCMDs: This is a list of the disallowed commands. Add to the list using the same format as shown. Set first line to 'null' to allow all commands.";
+               "DisallowedCMDs: This is a list of the disallowed commands when Disallow All is off. Add to the list using the same format as shown. Set first line to 'null' to allow all commands." + newLine +
+               "WhiteList: If Disallow All is on, commands in this list will be the only ones allowed. Set first line to 'null' to disallow all commands while using Disallow All.";
 		
 	}
 	

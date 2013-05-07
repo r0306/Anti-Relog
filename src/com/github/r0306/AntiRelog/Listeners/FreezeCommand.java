@@ -26,6 +26,27 @@ public class FreezeCommand implements Listener, Colors
 			if (Configuration.commandDisabled())
 			{
 				
+				String command = event.getMessage();
+				
+				if (command.startsWith("/ar") || command.startsWith("/antirelog"))
+				{
+					
+					return;
+					
+				}
+				
+				for (String s : Configuration.getWhiteList())
+				{
+					
+					if (("/" + s).toLowerCase().contains(command.toLowerCase()))
+					{
+						
+						return;
+						
+					}
+					
+				}
+				
 				cancelEvent(event);
 				
 			}
